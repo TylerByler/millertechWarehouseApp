@@ -27,9 +27,6 @@ export default function SlotEditTile({item}: Props) {
 	const [ogStatuses, setOgStatuses] = useState<STATUS[]>([])
 	const [ogQuantities, setOgQuantities] = useState<number[]>([])
 
-	/* const [slots, setSlots] = useState<{id: string, quantity: number, status: STATUS}[]>([])
-	const [ogSlots, setSlots] = useState<{id: string, quantity: number, status: STATUS}[]>([]) */
-
 	const database = useSQLiteContext() 
 
 	const loadData = async () => {
@@ -61,28 +58,9 @@ export default function SlotEditTile({item}: Props) {
 		setQuantities(newQuantities)
 		setOgQuantities(newQuantities)
 		setImportantSlots(newImportantSlots)
-		setPresentedData(newImportantSlots)
-
-		/* const result = await database.getAllAsync<{id: string}>("SELECT id FROM slots")
-		const newSlots = new Array<{id: string, quantity: number, status: STATUS}>()
-		const importantSlots = new Array<{id: string, quantity: number, status: STATUS}>()
-		for (let i = 0; i < result.length; i++) {
-			newSlots[i].id = result[i].id
-			newSlots[i].status = STATUS.NORMAL
-			newSlots[i].quantity = 0
-			for (let j = 0; j < item.slots.length; j++) {
-				if (result[i].id === item.slots[j].id) {
-					newSlots[i].status = STATUS.PREEXIST
-					newSlots[i].quantity = item.slots[j].quantity
-				}
-			}
-		}
-
-		for (let i = 0; i < item.slots.length; i++) {
-			importantSlots.push(newSlots)
-		} */
+		setPresentedData(newImportantSlots) 
 	}
-
+	
 	useEffect(() => {
 		loadData()
 	},[])

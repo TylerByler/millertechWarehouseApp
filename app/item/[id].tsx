@@ -1,6 +1,6 @@
 import { CompactSlot, Item, TempItem } from "@/assets/types/Item";
 import EditModal from "@/components/editModal";
-import SlotEditTile from "@/components/slotEditTile";
+import SlotEditTile from "@/components/slotEditTileRework";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useEffect, useState } from "react";
