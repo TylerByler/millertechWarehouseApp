@@ -6,6 +6,9 @@ node_modules/
 # VSCode
 .vscode/
 
+# Planning and Info
+Plan.txt
+
 # Expo
 .expo/
 dist/

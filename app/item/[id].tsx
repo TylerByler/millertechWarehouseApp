@@ -107,7 +107,7 @@ export default function ItemScreen() {
 				keyExtractor={(item) => item.id}
 				/>
 				<EditModal title={"Edit Slots"} isVisible={isModalVisible} onClose={onCloseModal}>
-					<SlotEditTile item={modalEditValue!}></SlotEditTile>
+					<SlotEditTile item={modalEditValue!} onClose={onCloseModal}></SlotEditTile>
 				</EditModal>
 			</View>
 		</StrictMode>

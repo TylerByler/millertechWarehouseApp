@@ -1,9 +1,0 @@
-CODE TO REFACTOR INTO COMPONENTS/FUNCITONS
-1: SEARCH FUNCTION (in search, slotEditTile, and itemEditTile)
-
-
-POSSIBLE OPTIMIZATIONS FOR FUTURE
-1: Use string.includes() for searching
-2: Store items and slots alphabetically with 2d array
-3: Use repository to store items and slots (use createContext() and useContext())
-4: !!!!!!!!!!! PLEASE REFACTOR DATA STORAGE AND SEPARATE SLOT ID, SLOT QUANTITY, AND SLOT STATUSES (ex. slotEditTile) !!!!!!!!!!!!!

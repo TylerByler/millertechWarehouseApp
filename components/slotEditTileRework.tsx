@@ -12,16 +12,10 @@ export enum STATUS {
 
 type Props = {
 	item: Item
+	onClose: () => void
 }
 
-export default function SlotEditTile({item}: Props) {
-	/* const [editSlot, setEditSlot] = useState<{id: string, quantity: number, status: STATUS, isOgSlot: boolean}>({
-		id: "", 
-		quantity: -1,
-		status: STATUS.NORMAL,
-		isOgSlot: false
-	}) */
-
+export default function SlotEditTile({item, onClose}: Props) {
 	const [editSlot, setEditSlot] = useState<number>(-1)
 	const [isModalVisible, setIsModalVisible] = useState<boolean>()
 	const [presentedData, setPresentedData] = useState<number[]>([])
@@ -101,12 +95,48 @@ export default function SlotEditTile({item}: Props) {
 		setEditSlot(-1)
 	}
 
-	const onSubmit = (slot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}) => {
-		console.log(slot)
-		const indexOfSlot = slots.findIndex(e => e.id === slot.id)
+	const onReset = (index: number) => {
+		onSubmitSlotEdit(index,ogSlots[index].quantity)
+	}
 
-		if (!slot.isOgSlot) {
-			if (slot.status !== STATUS.NORMAL) {
+	const onSubmitSlotEdit = (slotIndex: number, updatedSlotQuantity: number) => {
+		let newSlot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}
+		const newSlotId = slots.findIndex(e => e.id === slots[slotIndex].id)
+		const previousQuantity = ogSlots[newSlotId].quantity
+		console.log("PREVIOUS SLOT QUANTITY")
+		console.log(previousQuantity)
+
+		console.log("UPDATED SLOT QUANTITY")
+		console.log(updatedSlotQuantity)
+
+		newSlot = {
+			id: slots[slotIndex].id,
+			quantity: updatedSlotQuantity,
+			status: STATUS.CHANGED,
+			isOgSlot: slots[slotIndex].isOgSlot
+		}
+
+		if (updatedSlotQuantity <= 0) {
+			newSlot = {
+				id: slots[slotIndex].id,
+				quantity: 0,
+				status: STATUS.DELETED,
+				isOgSlot: slots[slotIndex].isOgSlot
+			}
+		}
+		if (updatedSlotQuantity === previousQuantity) {
+			newSlot = {
+				id: slots[slotIndex].id,
+				quantity: updatedSlotQuantity,
+				status: STATUS.NORMAL,
+				isOgSlot: slots[slotIndex].isOgSlot
+			}
+		}
+		console.log(slots[slotIndex])
+		const indexOfSlot = slots.findIndex(e => e.id === newSlot.id)
+
+		if (!newSlot.isOgSlot) {
+			if (newSlot.status !== STATUS.NORMAL) {
 				importantSlots.push(indexOfSlot)
 				importantSlots.sort()
 			} else {
@@ -123,7 +153,29 @@ export default function SlotEditTile({item}: Props) {
 			}
 		}
 
-		slots[slots.findIndex(e => e.id == slot.id)] = slot
+		slots[slots.findIndex(e => e.id == newSlot.id)] = newSlot
+		setPresentedData([...importantSlots])
+	}
+
+	const onSubmitDataToDB = async () => {
+		const finalSlots = slots.filter(e => e.quantity !== 0)
+		console.log("Final Slots")
+		console.log(finalSlots)
+		let statement = ""
+		finalSlots.map((e, index) => {
+			statement += ("json_object('id', '" + e.id + "', 'quantity', " + e.quantity.toString() + ")")
+			console.log("Index" + index)
+			if (index < finalSlots.length - 1) {
+				statement += ", "
+			}
+		})
+
+		try {
+			await database.runAsync("UPDATE items SET slots = json_array(" + statement + ") WHERE id = '" + item.id + "';")
+		} catch(e) {
+			console.log(e)
+		}
+		onClose()
 	}
 
 	const Slots = ({item}: {item: number}) => (
@@ -135,12 +187,23 @@ export default function SlotEditTile({item}: Props) {
 				slots[item].status === STATUS.CHANGED && {backgroundColor: '#ffebaf'},
 				slots[item].status === STATUS.DELETED && {backgroundColor: '#ffc4c4'},
 				]}
-			onPress={() => onPressSlot(item)}>
-				<Text>
-					{slots[item].id} 
-					{"   "} 
+			onPress={() => onPressSlot(item)}
+			>
+				<View style={styles.listLabel}>
+					<Text>
+						{slots[item].id} 
+					</Text>
+				</View>
+				<View style={styles.listLabel}>
+					<Text>
 					{slots[item].quantity}
-				</Text>
+					</Text>
+				</View>
+				<View style={styles.listLabel}>
+					<Pressable style={styles.resetButton} onPress={() => onReset(item)}>
+						<Text>Reset</Text>
+					</Pressable>
+				</View>
 			</Pressable>
 		)
 
@@ -162,18 +225,37 @@ export default function SlotEditTile({item}: Props) {
 				/>
 			</View>
 			<View style={styles.listContainer}>
+				<View style={styles.listLabelContainer}>
+					<View style={styles.listLabel}>
+						<Text style={styles.listLabelText}>Slot</Text>
+					</View>
+					<View style={styles.listLabel}>
+						<Text style={styles.listLabelText}>Quantity</Text>
+					</View>
+					<View style={styles.listLabel}>
+						<Text style={styles.listLabelText}>Reset Button</Text>
+					</View>
+				</View>
 				<FlatList
 				data={presentedData}
 				renderItem={Slots}
 				keyExtractor={(i) => slots[i].id}
 				/>
 			</View>
+			<View style={{width: "100%", justifyContent: "center", alignItems: "center"}}>
+				<Pressable style={styles.submitButton} onPress={() => onSubmitDataToDB()}>
+					<Text style={{fontSize: 20, fontWeight: "bold", color: "#fff"}}>
+						Submit
+					</Text>
+				</Pressable>
+			</View>
 			<Modal animationType="none" transparent={true} visible={isModalVisible}>
 				<EditMenu 
+				slotIndex={editSlot}
 				slot={slots[editSlot]}
 				ogQuantity={ogSlots[editSlot] !== undefined ? ogSlots[editSlot].quantity : 0}
 				onCloseEditSlot={onCloseEditSlot}
-				onSubmit={onSubmit}
+				onSubmit={onSubmitSlotEdit}
 				></EditMenu>
 			</Modal>
 		</View>
@@ -191,7 +273,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 		height: 120,
 		flexDirection: "column",
-		marginBottom: 20,
+		marginBottom: 40,
 	},
 	searchBarTitle: {
 		flex: 1,
@@ -227,11 +309,49 @@ const styles = StyleSheet.create({
 		alignSelf: "center"
 	},
 	listItem: {
+		flexDirection: "row",
 		borderBottomWidth: 2,
 		borderLeftWidth: 2,
 		borderRightWidth: 2,
 		borderColor: '#25292e',
 		height: 55,
 		width: "100%",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	resetButton: {
+		height: 35,
+		width: 60,
+		borderWidth: 2,
+		borderColor: '#25292e',
+		borderRadius: 16,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	listLabelContainer: {
+		flexDirection: "row",
+		height: 60,
+		backgroundColor: '#25292e',
+		borderTopLeftRadius: 16,
+		borderTopRightRadius: 16,
+	},
+	listLabel: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center"
+	},
+	listLabelText: {
+		color: "white",
+		fontSize: 20,
+		fontWeight: "bold",
+	},
+	submitButton: {
+		width: 200,
+		height: 80,
+		backgroundColor:"#25292e",
+		marginTop: 30,
+		borderRadius: 16,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 })

@@ -4,13 +4,14 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import { STATUS } from "./slotEditTileRework"
 
 type Props = {
+	slotIndex: number,
 	slot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean},
 	ogQuantity: number
 	onCloseEditSlot: () => void,
-	onSubmit: (slot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}) => void
+	onSubmit: (slotIndex: number,updatedSlotQuantity: number) => void
 }
 
-export default function EditMenu({slot, ogQuantity, onCloseEditSlot, onSubmit}: Props) {
+export default function EditMenu({slotIndex, slot, ogQuantity, onCloseEditSlot, onSubmit}: Props) {
 	const [thisSlot, setThisSlot] = useState<{id: string, quantity: number, status: STATUS, isOgSlot: boolean}>({id: "", quantity: -1, status: STATUS.NORMAL, isOgSlot: false})
 	const [updatedSlotQuantity, setUpdatedSlotQuantity] = useState<number>(0)
 	const [previousQuantity, setPreviousQuantity] = useState<number>(0)
@@ -27,38 +28,7 @@ export default function EditMenu({slot, ogQuantity, onCloseEditSlot, onSubmit}: 
 		<Pressable 
 		style={styles.submitButton} 
 		onPress={() => {
-			let newSlot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}
-			console.log("PREVIOUS SLOT QUANTITY")
-			console.log(previousQuantity)
-
-			console.log("UPDATED SLOT QUANTITY")
-			console.log(updatedSlotQuantity)
-
-			newSlot = {
-				id: thisSlot.id,
-				quantity: updatedSlotQuantity,
-				status: STATUS.CHANGED,
-				isOgSlot: thisSlot.isOgSlot
-			}
-
-			if (updatedSlotQuantity <= 0) {
-				newSlot = {
-					id: thisSlot.id,
-					quantity: 0,
-					status: STATUS.DELETED,
-					isOgSlot: thisSlot.isOgSlot
-				}
-			}
-			if (updatedSlotQuantity === previousQuantity) {
-				newSlot = {
-					id: thisSlot.id,
-					quantity: updatedSlotQuantity,
-					status: STATUS.NORMAL,
-					isOgSlot: thisSlot.isOgSlot
-				}
-			}
-
-			onSubmit(newSlot)
+			onSubmit(slotIndex, updatedSlotQuantity)
 			onCloseEditSlot();
 		}}>
 			<Text style={styles.submitButtonText}>Submit</Text>
