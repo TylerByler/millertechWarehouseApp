@@ -4,20 +4,66 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import { STATUS } from "./slotEditTileRework"
 
 type Props = {
-	slotId: number
-	slots: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}[]
+	slot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean},
+	ogQuantity: number
 	onCloseEditSlot: () => void,
-	setSlots: (slots: {id:string, quantity:number, status: STATUS, isOgSlot: boolean}[]) => void
+	onSubmit: (slot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}) => void
 }
 
-export default function EditMenu({slotId, slots, onCloseEditSlot, setSlots}: Props) {
+export default function EditMenu({slot, ogQuantity, onCloseEditSlot, onSubmit}: Props) {
+	const [thisSlot, setThisSlot] = useState<{id: string, quantity: number, status: STATUS, isOgSlot: boolean}>({id: "", quantity: -1, status: STATUS.NORMAL, isOgSlot: false})
 	const [updatedSlotQuantity, setUpdatedSlotQuantity] = useState<number>(0)
 	const [previousQuantity, setPreviousQuantity] = useState<number>(0)
 
 	useEffect(() => {
-		if (slots[slotId] !== undefined) 
-			{setPreviousQuantity(slots[slotId].quantity)}
+		if (slot !== undefined) 
+			{
+				setThisSlot({id: slot.id, quantity: slot.quantity, status: slot.status, isOgSlot: slot.isOgSlot})
+				setPreviousQuantity(ogQuantity)
+			}
 	},[])
+
+	const SubmitButton = () => (
+		<Pressable 
+		style={styles.submitButton} 
+		onPress={() => {
+			let newSlot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}
+			console.log("PREVIOUS SLOT QUANTITY")
+			console.log(previousQuantity)
+
+			console.log("UPDATED SLOT QUANTITY")
+			console.log(updatedSlotQuantity)
+
+			newSlot = {
+				id: thisSlot.id,
+				quantity: updatedSlotQuantity,
+				status: STATUS.CHANGED,
+				isOgSlot: thisSlot.isOgSlot
+			}
+
+			if (updatedSlotQuantity <= 0) {
+				newSlot = {
+					id: thisSlot.id,
+					quantity: 0,
+					status: STATUS.DELETED,
+					isOgSlot: thisSlot.isOgSlot
+				}
+			}
+			if (updatedSlotQuantity === previousQuantity) {
+				newSlot = {
+					id: thisSlot.id,
+					quantity: updatedSlotQuantity,
+					status: STATUS.NORMAL,
+					isOgSlot: thisSlot.isOgSlot
+				}
+			}
+
+			onSubmit(newSlot)
+			onCloseEditSlot();
+		}}>
+			<Text style={styles.submitButtonText}>Submit</Text>
+		</Pressable>
+	)
 
 	return (
 		<View style={styles.modalContainer}>
@@ -31,7 +77,7 @@ export default function EditMenu({slotId, slots, onCloseEditSlot, setSlots}: Pro
 					<View style={styles.editSlotBox}>
 						<View style={styles.slotLabel}>
 							<Text style={styles.searchBarTitleText}>
-								Edit Slot {slots[slotId] !== undefined ? slots[slotId].id : "N/A"}
+								Edit Slot {thisSlot.id !== undefined ? thisSlot.id : "N/A"}
 							</Text>
 						</View>
 						<TextInput 
@@ -40,42 +86,10 @@ export default function EditMenu({slotId, slots, onCloseEditSlot, setSlots}: Pro
 						placeholderTextColor={"grey"}
 						onChangeText={(value) => {
 							setUpdatedSlotQuantity(parseInt(value))
-							console.log("SLOTS DURING TEXT BOX UPDATE")
-							console.log(slots)
 						}}
 						></TextInput>
 					</View>
-					<Pressable 
-					style={styles.submitButton} 
-					onPress={() => {
-						console.log("SLOTS BEFORE ARRAY ASSIGNMENT")
-						console.log(slots)
-
-						const newSlots: Array<{id:string, quantity:number, status: STATUS, isOgSlot: boolean}> = slots;
-
-						console.log("SLOTS AFTER ARRAY ASSIGNMENT")
-						console.log(slots)
-
-						newSlots[slotId].quantity = updatedSlotQuantity;
-						console.log("SLOTS AFTER QUANTITY ASSIGNMENT")
-						console.log(slots[slotId].quantity)
-						console.log("NEW SLOTS AFTER QUANTITY ASSIGNMENT")
-						console.log(newSlots[slotId].quantity)
-
-						if (updatedSlotQuantity === 0) {
-							newSlots[slotId].status = STATUS.DELETED
-						}
-						if (updatedSlotQuantity === slots[slotId].quantity) {
-							newSlots[slotId].status = STATUS.NORMAL
-						}
-						if (updatedSlotQuantity < 0 && updatedSlotQuantity !== slots[slotId].quantity) {
-							newSlots[slotId].status = STATUS.CHANGED
-						}
-						setSlots(newSlots);
-						onCloseEditSlot();
-					}}>
-						<Text style={styles.submitButtonText}>Submit</Text>
-					</Pressable>
+					<SubmitButton></SubmitButton>
 				</View>
 			</View>
 		</View>

@@ -194,8 +194,8 @@ export default function SlotEditTile({item}: Props) {
 			<Modal animationType="none" transparent={true} visible={isModalVisible}>
 				<EditMenu 
 				index={editSlot} 
-				ids={ids} 
-				quantities={quantities}
+				ids={[...ids]} 
+				quantities={[...quantities]}
 				onCloseEditSlot={onCloseEditSlot}
 				onSaveSlot={onSaveSlot}
 				></EditMenu>

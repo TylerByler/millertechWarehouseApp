@@ -15,11 +15,19 @@ type Props = {
 }
 
 export default function SlotEditTile({item}: Props) {
+	/* const [editSlot, setEditSlot] = useState<{id: string, quantity: number, status: STATUS, isOgSlot: boolean}>({
+		id: "", 
+		quantity: -1,
+		status: STATUS.NORMAL,
+		isOgSlot: false
+	}) */
+
 	const [editSlot, setEditSlot] = useState<number>(-1)
 	const [isModalVisible, setIsModalVisible] = useState<boolean>()
 	const [presentedData, setPresentedData] = useState<number[]>([])
 	const [importantSlots, setImportantSlots] = useState<number[]>([])
 	const [slots, setSlots] = useState<{id: string, quantity: number, status: STATUS, isOgSlot: boolean}[]>([])
+	const [ogSlots, setOgSlots] = useState<{id: string, quantity: number, status: STATUS, isOgSlot: boolean}[]>([])
 
 	const database = useSQLiteContext() 
 
@@ -44,6 +52,7 @@ export default function SlotEditTile({item}: Props) {
 		}
 
 		setSlots(newSlots)
+		setOgSlots([...newSlots])
 		setPresentedData(newPresentedData)
 		setImportantSlots(newPresentedData)
 	}
@@ -58,13 +67,6 @@ export default function SlotEditTile({item}: Props) {
 		} else {
 			setIsModalVisible(true)
 		}
-
-		console.log("Edit Slot: ")
-		console.log(editSlot)
-		console.log("Slots: ")
-		console.log(slots)
-		console.log("Presented Data: ")
-		console.log(presentedData)
 	}, [editSlot])
 
 	const searchSlots = (searchedValue: string) => {
@@ -93,12 +95,35 @@ export default function SlotEditTile({item}: Props) {
 
 	const onPressSlot = (id: number) => {
 		setEditSlot(id)
-		console.log("Opened Edit Slot")
 	}
 
 	const onCloseEditSlot = () => {
 		setEditSlot(-1)
-		console.log("Closed Edit Slot")
+	}
+
+	const onSubmit = (slot: {id: string, quantity: number, status: STATUS, isOgSlot: boolean}) => {
+		console.log(slot)
+		const indexOfSlot = slots.findIndex(e => e.id === slot.id)
+
+		if (!slot.isOgSlot) {
+			if (slot.status !== STATUS.NORMAL) {
+				importantSlots.push(indexOfSlot)
+				importantSlots.sort()
+			} else {
+				const valueIndex = importantSlots.findIndex((e) => e === indexOfSlot)
+				const tmpA = importantSlots[valueIndex]
+				const tmpB = importantSlots[importantSlots.length - 1]
+
+				importantSlots[valueIndex] = tmpB
+				importantSlots[importantSlots.length - 1] = tmpA
+
+				importantSlots.pop()
+				console.log("Important Slots after swizzle")
+				console.log(importantSlots)
+			}
+		}
+
+		slots[slots.findIndex(e => e.id == slot.id)] = slot
 	}
 
 	const Slots = ({item}: {item: number}) => (
@@ -145,10 +170,10 @@ export default function SlotEditTile({item}: Props) {
 			</View>
 			<Modal animationType="none" transparent={true} visible={isModalVisible}>
 				<EditMenu 
-				slotId={editSlot}
-				slots={slots}
+				slot={slots[editSlot]}
+				ogQuantity={ogSlots[editSlot] !== undefined ? ogSlots[editSlot].quantity : 0}
 				onCloseEditSlot={onCloseEditSlot}
-				setSlots={setSlots}
+				onSubmit={onSubmit}
 				></EditMenu>
 			</Modal>
 		</View>
