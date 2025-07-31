@@ -1,6 +1,6 @@
 import { CompactSlot, Item, TempItem } from "@/assets/types/Item";
 import EditModal from "@/components/editModal";
-import SlotEditTile from "@/components/slotEditTileRework";
+import SlotEditTile from "@/components/slotEditComponents/slotEditTile";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useEffect, useState } from "react";
@@ -28,7 +28,6 @@ export default function ItemScreen() {
 					description: result[i].desc
 				}
 			}
-			console.log(parsedItems)
 			setData(parsedItems) 
 		} catch(e) {
 			console.log(e)
@@ -66,7 +65,7 @@ export default function ItemScreen() {
 		</Link>
 	)
 
-	const Items = ({item}: {item: Item}) => (
+	const Slot = ({item}: {item: Item}) => (
 		<View style={styles.itemContainer}>
 			<View style={styles.titleContainer}>
 				<Text style={styles.title}>
@@ -103,7 +102,7 @@ export default function ItemScreen() {
 			<View style={styles.pageContainer}>
 				<FlatList 
 				data={data}
-				renderItem={Items}
+				renderItem={Slot}
 				keyExtractor={(item) => item.id}
 				/>
 				<EditModal title={"Edit Slots"} isVisible={isModalVisible} onClose={onCloseModal}>

@@ -1,19 +1,23 @@
 import { Slot, TempSlot } from "@/assets/types/Slot";
+import EditModal from "@/components/editModal";
+import ItemEditTile from "@/components/itemEditComponents/itemEditTile";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SlotScreen() {
 	const { id } = useLocalSearchParams()
 	const [data, setData] = useState<Slot[]>([])
+	const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
+	const [modalEditValue, setModalEditValue] = useState<Slot>()
 
 	const database = useSQLiteContext()
 
 	const loadData = async () => {
 		try {
-			var query: string = "SELECT * FROM slots WHERE id = '" + id + "';"
-			const result = await database.getAllAsync<TempSlot>(query)
+			let slotsQuery: string = "SELECT * FROM slots WHERE id = '" + id + "';"
+			const result = await database.getAllAsync<TempSlot>(slotsQuery)
 			let parsedSlots = new Array<Slot>(result.length)
 			for (let i = 0; i < result.length; i++) {
 				parsedSlots[i] = {
@@ -24,7 +28,6 @@ export default function SlotScreen() {
 					zPos: result[i].zPos
 				}
 			}
-			console.log(parsedSlots)
 			setData(parsedSlots) 
 		} catch(e) {
 			console.log(e)
@@ -35,6 +38,16 @@ export default function SlotScreen() {
 	useEffect(() => {
 		loadData()
 	},[]) 
+
+	const onEditSlots = (slot: Slot) => {
+		setIsModalVisible(true)
+		setModalEditValue(slot)
+	}
+
+	const onCloseModal = () => {
+		loadData()
+		setIsModalVisible(false)
+	}
 
 	const ItemLinks = ({item}: {item: string}) => (
 		<Link 
@@ -68,6 +81,9 @@ export default function SlotScreen() {
 				data={item.items}
 				renderItem={ItemLinks}
 				/>
+				<Pressable style={[styles.itemLinksLabel, {alignSelf: "flex-end"}]} onPress={() => onEditSlots(item)}>
+					<Text>Edit Items</Text>
+				</Pressable>
 			</View>
 		</View>
 		</View>
@@ -82,6 +98,9 @@ export default function SlotScreen() {
 				keyExtractor={(item) => item.id}
 				/>
 			</View>
+			<EditModal title={"Edit Items"} isVisible={isModalVisible} onClose={onCloseModal}> 
+				<ItemEditTile slot={modalEditValue!} onClose={onCloseModal}></ItemEditTile>
+			</EditModal>
 		</StrictMode>
 	)
 }

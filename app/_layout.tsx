@@ -11,7 +11,7 @@ export default function RootLayout() {
         DROP TABLE items;
         CREATE TABLE IF NOT EXISTS slots (
           id VARCHAR(10) NOT NULL PRIMARY KEY, 
-          items JSON, 
+          items JSON NOT NULL, 
           posx INTEGER NOT NULL, 
           posy INTEGER NOT NULL, 
           posz INTEGER NOT NULL); 
@@ -25,9 +25,10 @@ export default function RootLayout() {
           id VARCHAR(20) NOT NULL PRIMARY KEY,
           name VARCHAR(40) NOT NULL,
           primaryslot VARCHAR(10) NOT NULL,
-          slots JSON,
+          slots JSON NOT NULL,
           desc TEXT);
         
+        INSERT INTO items (id, name, primaryslot, slots, desc) VALUES ('JS40P','40oz Swahn Water Bottle', 'A-3', json_array(), 'ENTER DESC HERE');
         INSERT INTO items (id, name, primaryslot, slots, desc) VALUES ('HD1GW','Heavy Duty 1 Gallon Jug White', 'A-1', json_array(json_object('id', 'A-1', 'quantity', 10), json_object('id', 'A-2', 'quantity', 20), json_object('id', 'A-3', 'quantity', 10)), 'ENTER DESC HERE');
         INSERT INTO items (id, name, primaryslot, slots, desc) VALUES ('JS22PK','22oz Swahn Water Bottle', 'A-2', json_array(json_object('id', 'A-1', 'quantity', 5), json_object('id', 'A-3', 'quantity', 30)), 'ENTER DESC HERE');
         `

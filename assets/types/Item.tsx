@@ -20,10 +20,6 @@ export type CompactSlot = {
 }
 
 export function TempsToItems(temp: TempItem[]): Item[] {
-	// DEBUGGING
-	//console.log("temp:\n")
-	//console.log(temp)
-
 	// CREATE ARRAY TO RETURN
 	let parsedItems = new Array<Item>(temp.length)
 
@@ -31,10 +27,6 @@ export function TempsToItems(temp: TempItem[]): Item[] {
 	// ARRAY INTO A NEW ARRAY OF STRINGS IN PARSEDJSON
 	for (let i = 0; i < temp.length; i++) {
 		let parsedJSON: CompactSlot[] = JSON.parse(temp[i].slots)
-
-		// DEBUGGING 
-		//console.log("parsedJson:\n")
-		//console.log(parsedJSON)
 
 		parsedItems[i] = {
 			id: temp[i].id,
