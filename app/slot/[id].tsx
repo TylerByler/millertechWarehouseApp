@@ -1,4 +1,4 @@
-import { Slot, TempSlot } from "@/assets/types/Slot";
+import { CompactItem, Slot } from "@/assets/types/Slot";
 import EditModal from "@/components/editModal";
 import ItemEditTile from "@/components/itemEditComponents/itemEditTile";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -8,7 +8,10 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SlotScreen() {
 	const { id } = useLocalSearchParams()
-	const [data, setData] = useState<Slot[]>([])
+	const [data, setData] = useState<Slot>({
+		id: "",
+		items: []
+	})
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
 	const [modalEditValue, setModalEditValue] = useState<Slot>()
 
@@ -16,19 +19,14 @@ export default function SlotScreen() {
 
 	const loadData = async () => {
 		try {
-			let slotsQuery: string = "SELECT * FROM slots WHERE id = '" + id + "';"
-			const result = await database.getAllAsync<TempSlot>(slotsQuery)
-			let parsedSlots = new Array<Slot>(result.length)
-			for (let i = 0; i < result.length; i++) {
-				parsedSlots[i] = {
-					id: result[i].id,
-					items: JSON.parse(result[i].items),
-					xPos: result[i].xPos,
-					yPos: result[i].yPos,
-					zPos: result[i].zPos
+			const quantitiesResult = await database.getAllAsync<{item_id: string, quantity: number}>("SELECT item_id, quantity FROM quantities WHERE slot_id ='" + id + "';")
+			if (typeof id == "string") {
+				let parsedSlot = {
+					id: id,
+					items: quantitiesResult
 				}
+				setData(parsedSlot) 
 			}
-			setData(parsedSlots) 
 		} catch(e) {
 			console.log(e)
 			router.back()
@@ -49,17 +47,17 @@ export default function SlotScreen() {
 		setIsModalVisible(false)
 	}
 
-	const ItemLinks = ({item}: {item: string}) => (
+	const ItemLinks = ({item}: {item: CompactItem}) => (
 		<Link 
 		href={{
 			pathname: '/item/[id]',
-			params: {id: item}
+			params: {id: item.item_id}
 			}}
 			style={styles.itemLink}
 		>
 			<View style={styles.itemLinkHelper}>
-				<Text>{item}</Text>
-				<Text>0</Text>
+				<Text>{item.item_id}</Text>
+				<Text>{item.quantity}</Text>
 			</View>
 		</Link>
 	)
@@ -92,11 +90,7 @@ export default function SlotScreen() {
 	return (
 		<StrictMode>
 			<View style={styles.pageContainer}>
-				<FlatList 
-				data={data}
-				renderItem={Item}
-				keyExtractor={(item) => item.id}
-				/>
+				<Item item={data}></Item>
 			</View>
 			<EditModal title={"Edit Items"} isVisible={isModalVisible} onClose={onCloseModal}> 
 				<ItemEditTile slot={modalEditValue!} onClose={onCloseModal}></ItemEditTile>

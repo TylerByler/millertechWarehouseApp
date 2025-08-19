@@ -37,7 +37,7 @@ export default function SlotEditTile({item, onClose}: Props) {
 				isOgSlot: false
 			})
 			for (let j = 0; item.slots !== null && j < item.slots.length; j++) {
-				if (result[i].id === item.slots[j].id) {
+				if (result[i].id === item.slots[j].slot_id) {
 					newSlots[newSlots.length-1].isOgSlot = true
 					newSlots[newSlots.length-1].quantity = item.slots[j].quantity
 					newPresentedData.push(newSlots.length-1)
@@ -155,83 +155,42 @@ export default function SlotEditTile({item, onClose}: Props) {
 
 	const onSubmitDataToDB = async () => {
 		const finalSlots = slots.filter(e => e.quantity !== 0 || e.isOgSlot)
-		let itemUpdateStatement = ""
-		let slotsRetrieveStatement = ""
+		// One Item, Many Slots
+		// Update quantity table
+		const result = await database.getAllAsync<{slot_id: string, item_id: string, quantity: number}>("SELECT * FROM quantities WHERE item_id = '" + item.id + "';")
 
-		// ITERATE THROUGH SLOTS ON ITEM
-		// For each slot, we want to add both the id and the quantity to the itemUpdateStatement
-		finalSlots.map((e, index) => {
-			if (e.quantity !== 0) {
-				itemUpdateStatement += ("json_object('id', '" + e.slotId + "', 'quantity', " + e.quantity.toString() + ")")
+		let removeStatement = ""
 
-				if (index < finalSlots.length - 1) {
-					itemUpdateStatement += ", "
+		for (let i = 0; i < finalSlots.length; i++) {
+			if (finalSlots[i].quantity === 0) {
+				if (removeStatement !== "") {
+					removeStatement += ", "
 				}
+				removeStatement += ("'" + finalSlots[i].slotId + "'")
+				let temp = finalSlots[i]
+				finalSlots[i] = finalSlots[finalSlots.length-1]
+				finalSlots[finalSlots.length-1] = temp
+				finalSlots.pop()
 			}
+		}
 
-			slotsRetrieveStatement += ("'" + e.slotId + "'")
-
-			if (index < finalSlots.length - 1) {
-				slotsRetrieveStatement += ", "
-			}
-		})
-
-		// ITERATE THROUGH SLOTS ON ITEM & OGSLOTS
-		// For each slot, we want to get the items in that slot
-		// Check for ITEM within each slots items, remove it from the array
-		// Send back updated item list to slot
-		const parsedResult = new Array<{slotId: string, items: string[]}>()
 		try {
-			const result = await database.getAllAsync<{id: string, items: string}>("SELECT id, items FROM slots WHERE id IN (" + slotsRetrieveStatement + ")")
-			for (var i = 0; i < result.length; i++) {
-				parsedResult[i] = {
-					slotId: result[i].id,
-					items: JSON.parse(result[i].items)
-				}
-			}
+			await database.runAsync("DELETE FROM quantities WHERE item_id = '" + item.id + "' AND slot_id IN (" + removeStatement + ");")
 		} catch (e) {
 			console.log(e)
 		}
 
-		parsedResult.forEach(async (e, index) => {
-			var isItemInSlot: boolean = false
-			var ogLength = e.items.length
-			for (var i = 0; i < ogLength; i++) {
-				if (e.items[i] == item.id) {
-					if (finalSlots[finalSlots.findIndex((x) => (x.slotId == e.slotId))].quantity == 0) {
-						var temp = e.items[i]
-						e.items[i] = e.items[ogLength - 1]
-						e.items[ogLength - 1] = temp
-						e.items.pop()
-					}
-					isItemInSlot = true
-					break
-				}
-			}
-
-			if (isItemInSlot === false) {
-				e.items.push(item.id)
-				e.items.sort()
-			}
-
-			var slotUpdateStatement = ""
-			for (var i = 0; i < e.items.length; i++) {
-				slotUpdateStatement += ("'" + e.items[i] + "'")
-				if (i < e.items.length - 1) {
-					slotUpdateStatement += ", "
-				}
-			}
-
-			try {
-				await database.runAsync("UPDATE slots SET items = json_array(" + slotUpdateStatement + ") WHERE id = '" + e.slotId + "';")
-			} catch (error) {
-				console.log(error)
-			}
-		})
-
 		try {
-			await database.runAsync("UPDATE items SET slots = json_array(" + itemUpdateStatement + ") WHERE id = '" + item.id + "';")
-		} catch(e) {
+			for (let i = 0; i < finalSlots.length; i++) {
+				let resultIndex = result.findIndex((e) => (e.slot_id == finalSlots[i].slotId))
+				if (resultIndex !== -1 && result[resultIndex].quantity !== finalSlots[i].quantity) {
+					await database.runAsync("UPDATE quantities SET quantity = " + finalSlots[i].quantity + " WHERE item_id = '" + item.id + "' AND slot_id = '" + finalSlots[i].slotId + "';")
+				}
+				if (resultIndex == -1) {
+					await database.runAsync("INSERT INTO quantities (item_id, slot_id, quantity) VALUES ('" + item.id + "', '" + finalSlots[i].slotId + "', " + finalSlots[i].quantity.toString() + ");")
+				}
+			}
+		} catch (e) {
 			console.log(e)
 		}
 		onClose()

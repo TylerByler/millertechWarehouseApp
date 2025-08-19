@@ -1,4 +1,4 @@
-import { CompactSlot, Item, TempItem } from "@/assets/types/Item";
+import { CompactSlot, Item } from "@/assets/types/Item";
 import EditModal from "@/components/editModal";
 import SlotEditTile from "@/components/slotEditComponents/slotEditTile";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -8,7 +8,13 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function ItemScreen() {
 	const { id } = useLocalSearchParams()
-	const [data, setData] = useState<Item[]>([])
+	const [data, setData] = useState<Item>({
+		id: "",
+		name: "",
+		primarySlot: "",
+		slots: [],
+		description: ""
+	})
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
 	const [modalEditValue, setModalEditValue] = useState<Item>()
 
@@ -16,19 +22,18 @@ export default function ItemScreen() {
 
 	const loadData = async () => {
 		try {
-			var query: string = "SELECT * FROM items WHERE id = '" + id + "';"
-			const result = await database.getAllAsync<TempItem>(query);
-			let parsedItems = new Array<Item>(result.length)
-			for (let i = 0; i < result.length; i++) {
-				parsedItems[i] = {
-					id: result[i].id,
-					name: result[i].name,
-					primarySlot: result[i].primarySlot,
-					slots: JSON.parse(result[i].slots),
-					description: result[i].desc
+			const itemResult = await database.getAllAsync<{id: string, name: string, primaryslot: string, desc: string}>("SELECT * FROM items WHERE id ='" + id + "';")
+			const quantitiesResult = await database.getAllAsync<{slot_id: string, quantity: number}>("SELECT slot_id, quantity FROM quantities WHERE item_id = '" + id + "';");
+			if (typeof id == "string") {
+				let parsedItem = {
+					id: id,
+					name: itemResult[0].name,
+					primarySlot: itemResult[0].primaryslot,
+					slots: quantitiesResult,
+					description: itemResult[0].desc
 				}
+				setData(parsedItem)
 			}
-			setData(parsedItems) 
 		} catch(e) {
 			console.log(e)
 			router.back()
@@ -37,7 +42,7 @@ export default function ItemScreen() {
 
 	useEffect(() => {
 		loadData();
-		setModalEditValue(data[0])
+		setModalEditValue(data)
 	},[])
 
 	const onEditSlots = (item: Item) => {
@@ -54,22 +59,24 @@ export default function ItemScreen() {
 		<Link 
 		href={{
 			pathname: '/slot/[id]',
-			params: {id: item.id}
+			params: {id: item.slot_id}
 			}}
 			style={styles.slotLink}
 		>
 			<View style={styles.slotLinkHelper}>
-				<Text>{item.id}</Text>
+				<Text>{item.slot_id}</Text>
 				<Text>{item.quantity}</Text>
 			</View>
 		</Link>
 	)
-
-	const Slot = ({item}: {item: Item}) => (
-		<View style={styles.itemContainer}>
+	
+	return (
+		<StrictMode>
+			<View style={styles.pageContainer}>
+				<View style={styles.itemContainer}>
 			<View style={styles.titleContainer}>
 				<Text style={styles.title}>
-					Item #{item.id}
+					Item #{data.id}
 				</Text>
 			</View>
 			<View style={styles.detailContainer}>
@@ -86,25 +93,15 @@ export default function ItemScreen() {
 						</View>
 					</View>
 					<FlatList 
-					data={item.slots}
+					data={data.slots}
 					renderItem={SlotLinks}
 					/>
-					<Pressable style={[styles.slotLinksLabel, {alignSelf: "flex-end"}]} onPress={() => onEditSlots(item)}>
+					<Pressable style={[styles.slotLinksLabel, {alignSelf: "flex-end"}]} onPress={() => onEditSlots(data)}>
 						<Text>Edit Slots</Text>
 					</Pressable>
 				</View>
 			</View>
 		</View>
-	)
-	
-	return (
-		<StrictMode>
-			<View style={styles.pageContainer}>
-				<FlatList 
-				data={data}
-				renderItem={Slot}
-				keyExtractor={(item) => item.id}
-				/>
 				<EditModal title={"Edit Slots"} isVisible={isModalVisible} onClose={onCloseModal}>
 					<SlotEditTile item={modalEditValue!} onClose={onCloseModal}></SlotEditTile>
 				</EditModal>

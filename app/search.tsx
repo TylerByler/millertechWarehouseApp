@@ -1,9 +1,7 @@
-import { Item, TempItem, TempsToItems } from "@/assets/types/Item";
 import { Link, router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { Slot, TempSlot, TempsToSlots } from "../assets/types/Slot";
 
 enum Tab {
 	ITEM,
@@ -13,19 +11,27 @@ enum Tab {
 export default function Search() {
 	const [searchValue, setSearchValue] = useState<string>("")
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.ITEM)
-	const [slots, setSlots] = useState<Slot[]>([])
-	const [items, setItems] = useState<Item[]>([])
-	const [filteredSlots, setFilteredSlots] = useState<Slot[]>([])
-	const [filteredItems, setFilteredItems] = useState<Item[]>([])
+	const [slots, setSlots] = useState<string[]>([])
+	const [items, setItems] = useState<string[]>([])
+	const [filteredSlots, setFilteredSlots] = useState<string[]>([])
+	const [filteredItems, setFilteredItems] = useState<string[]>([])
 
 	const database = useSQLiteContext()
 
 	const loadSlots = async () => {
 		try {
-			const slotResult = await database.getAllAsync<TempSlot>("SELECT * FROM slots;");
-			const parsedSlots = TempsToSlots(slotResult)
+			const slotResult = await database.getAllAsync<{id: string}>("SELECT id FROM slots;");
+			console.log("Slot Result");
+			console.log(slotResult);
+			const parsedSlots = new Array<string>()
+			for(let i = 0; i < slotResult.length; i++) {
+				parsedSlots.push(slotResult[i].id)
+			}
+			console.log("Parsed Slots")
+			console.log(parsedSlots)
+
 			setSlots(parsedSlots);
-			setFilteredSlots(parsedSlots)
+			setFilteredSlots(parsedSlots);
 		} catch(e) {
 			console.log(e)
 			router.back()
@@ -35,10 +41,13 @@ export default function Search() {
 
 	const loadItems = async () => {
 		try {
-			const itemResult = await database.getAllAsync<TempItem>("SELECT * FROM items;");
-			const parsedItems = TempsToItems(itemResult);
+			const itemResult = await database.getAllAsync<{id: string}>("SELECT id FROM items;");
+			const parsedItems = new Array<string>()
+			for(let i = 0; i < itemResult.length; i++) {
+				parsedItems.push(itemResult[i].id)
+			}
 			setItems(parsedItems);
-			setFilteredItems(parsedItems)
+			setFilteredItems(parsedItems);
 		} catch(e) {
 			console.log(e)
 			router.back()
@@ -50,16 +59,16 @@ export default function Search() {
 			setFilteredItems(items)
 			return
 		}
-		const newItemList: Item[] = new Array<Item>()
+		const newItemList = new Array<string>()
 		for (let i = 0; i < items.length; i++) {
 			console.log(typeof items[i])
 			let isMatch = true
 			let offset = 0
-			for (let j = 0; j + offset < items[i].id.length && j < searchedValue.length; j++) {
-				if (items[i].id[j + offset]==="#" && searchedValue[j] !== "#") {
+			for (let j = 0; j + offset < items[i].length && j < searchedValue.length; j++) {
+				if (items[i][j + offset]==="#" && searchedValue[j] !== "#") {
 					offset++
 				}
-				if (searchedValue[j].toUpperCase() !== items[i].id[j + offset]) {
+				if (searchedValue[j].toUpperCase() !== items[i][j + offset]) {
 					isMatch = false
 				}
 			}
@@ -75,15 +84,15 @@ export default function Search() {
 			setFilteredSlots(slots)
 			return
 		}
-		const newSlotList: Slot[] = new Array<Slot>()
+		const newSlotList = new Array<string>()
 		for (let i = 0; i < slots.length; i++) {
 			let isMatch = true
 			let offset = 0
-			for (let j = 0; j + offset < slots[i].id.length && j < searchedValue.length; j++) {
-				if (slots[i].id[j + offset] === "-" && searchedValue[j] !== "-") {
+			for (let j = 0; j + offset < slots[i].length && j < searchedValue.length; j++) {
+				if (slots[i][j + offset] === "-" && searchedValue[j] !== "-") {
 					offset++
 				}
-				if (searchedValue[j].toUpperCase() !== slots[i].id[j + offset]) {
+				if (searchedValue[j].toUpperCase() !== slots[i][j + offset]) {
 					isMatch = false
 				}
 			}
@@ -150,11 +159,11 @@ export default function Search() {
 					renderItem={({item}) => (
 						<Link href={{
 							pathname: '/item/[id]',
-							params: {id: item.id}
+							params: {id: item}
 						}}
 						style={styles.listItem}>
 							<Text style={styles.linkText}>
-								{item.id}
+								{item}
 							</Text>
 						</Link>
 					)}
@@ -167,11 +176,11 @@ export default function Search() {
 					renderItem={({item}) => (
 						<Link href={{
 							pathname: '/slot/[id]',
-							params: {id: item.id}
+							params: {id: item}
 						}}
 						style={styles.listItem}>
 							<Text style={styles.linkText}>
-								{item.id}
+								{item}
 							</Text>
 						</Link>
 					)}

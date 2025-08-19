@@ -5,7 +5,7 @@ import { STATUS } from "./itemEditTile"
 
 type Props = {
 	itemIndex: number,
-	item: {itemId: string, quantity: number, status: STATUS, isOgItem: boolean},
+	item: {id: string, quantity: number, status: STATUS, isOgItem: boolean},
 	ogQuantity: number
 	onCloseEditItem: () => void,
 	onSubmit: (itemIndex: number, updatedItemQuantity: number) => void
@@ -18,7 +18,7 @@ export default function ItemEditMenu({itemIndex, item, ogQuantity, onCloseEditIt
 
 	useEffect(() => {
 		if (item !== undefined){
-			setThisItem({id: item.itemId, quantity: item.quantity, status: item.status, isOgItem: item.isOgItem})
+			setThisItem({id: item.id, quantity: item.quantity, status: item.status, isOgItem: item.isOgItem})
 			setPreviousQuantity(ogQuantity)
 		}
 	},[])

@@ -15,7 +15,7 @@ export type TempItem = {
 }
 
 export type CompactSlot = {
-	id: string
+	slot_id: string
 	quantity: number
 }
 
@@ -26,13 +26,12 @@ export function TempsToItems(temp: TempItem[]): Item[] {
 	// ITERATE THROUGH EACH OBJECT IN ARRAY AND PARSE THE SLOT
 	// ARRAY INTO A NEW ARRAY OF STRINGS IN PARSEDJSON
 	for (let i = 0; i < temp.length; i++) {
-		let parsedJSON: CompactSlot[] = JSON.parse(temp[i].slots)
 
 		parsedItems[i] = {
 			id: temp[i].id,
 			name: temp[i].name,
 			primarySlot: temp[i].primarySlot,
-			slots: parsedJSON,
+			slots: JSON.parse(temp[i].slots),
 			description: temp[i].desc
 		}
 	}
@@ -42,7 +41,7 @@ export function TempsToItems(temp: TempItem[]): Item[] {
 export function printItemSlots(item: Item): string {
 	var result: string = ""
 	for (let i = 0; i < item.slots.length; i++) {
-		result += " Slot: " + item.slots[i].id + " Quantity: " + item.slots[i].quantity + "   "
+		result += " Slot: " + item.slots[i].slot_id + " Quantity: " + item.slots[i].quantity + "   "
 	}
 	return result
 }

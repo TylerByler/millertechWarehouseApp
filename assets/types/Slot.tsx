@@ -1,18 +1,17 @@
 
 export type Slot = {
-	xPos: number
-	yPos: number
-	zPos: number
-	id: string
-	items: string[]
+	id: string,
+	items: CompactItem[]
 }
 
 export type TempSlot = {
-	xPos: number
-	yPos: number
-	zPos: number
-	id: string
+	id: string,
 	items: string
+}
+
+export type CompactItem = {
+	item_id: string,
+	quantity: number
 }
 
 export function TempsToSlots(temp: TempSlot[]): Slot[] {
@@ -20,10 +19,7 @@ export function TempsToSlots(temp: TempSlot[]): Slot[] {
 	for (let i = 0; i < temp.length; i++) {
 		parsedSlots[i] = {
 			id: temp[i].id,
-			items: JSON.parse(temp[i].items),
-			xPos: temp[i].xPos,
-			yPos: temp[i].yPos,
-			zPos: temp[i].zPos
+			items: JSON.parse(temp[i].items)
 		}
 	}
 	return parsedSlots

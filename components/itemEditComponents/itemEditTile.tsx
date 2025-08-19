@@ -1,4 +1,3 @@
-import { CompactSlot } from "@/assets/types/Item"
 import { Slot } from "@/assets/types/Slot"
 import { useSQLiteContext } from "expo-sqlite"
 import { useEffect, useState } from "react"
@@ -21,36 +20,33 @@ export default function ItemEditTile({slot, onClose}: Props) {
 	const [isModalVisible, setIsModalVisible] = useState<boolean>()
 	const [presentedData, setPresentedData] = useState<number[]>([])
 	const [importantItems, setImportantItems] = useState<number[]>([])
-	const [items, setItems] = useState<{itemId: string, quantity: number, status: STATUS, isOgItem: boolean}[]>([])
-	const [ogItems, setOgItems] = useState<{itemId: string, quantity: number, status: STATUS, isOgItem: boolean}[]>([])
+	const [items, setItems] = useState<{id: string, quantity: number, status: STATUS, isOgItem: boolean}[]>([])
+	const [ogItems, setOgItems] = useState<{id: string, quantity: number, status: STATUS, isOgItem: boolean}[]>([])
 
 	const database = useSQLiteContext()
 
 	const loadData = async () => {
 		try {
-			const result = await database.getAllAsync<{id: string, slots: string}>("SELECT id, slots FROM items")
-			const newItems = new Array<{itemId: string, quantity: number, status: STATUS, isOgItem: boolean}>()
+			const itemsResult = await database.getAllAsync<{id: string}>("SELECT id FROM items")
+			const quantityResult = await database.getAllAsync<{slot_id: string, item_id: string, quantity: number}>("SELECT item_id, quantity FROM quantities WHERE slot_id = '" + slot.id + "';")
+			const newItems = new Array<{id: string, quantity: number, status: STATUS, isOgItem: boolean}>()
 			const newPresentedData = new Array<number>()
-			for (let i = 0; i < result.length; i++) {
-				let tempSlots: {id: string, quantity: number}[] = JSON.parse(result[i].slots)
+			for (let i = 0; i < itemsResult.length; i++) {
 				newItems.push({
-					itemId: result[i].id,
+					id: itemsResult[i].id,
 					status: STATUS.NORMAL,
 					quantity: 0,
 					isOgItem: false,
 				})
-				for (let j = 0; tempSlots !== null && j < tempSlots.length; j++) {
-					if (slot.id === tempSlots[j].id) {
-						newItems[newItems.length-1].quantity = tempSlots[j].quantity
-					}
-				}
-				for (let j = 0; j < slot.items.length; j++) {
-					if (result[i].id === slot.items[j]) {
+				for (let j = 0; j < quantityResult.length; j++) {
+					if (newItems[newItems.length -1].id === quantityResult[j].item_id) {
+						newItems[newItems.length - 1].quantity = quantityResult[j].quantity
 						newItems[newItems.length-1].isOgItem = true
 						newPresentedData.push(newItems.length-1)
 					}
 				}
 			}
+
 			setItems(newItems)
 			setOgItems([...newItems])
 			setPresentedData(newPresentedData)
@@ -81,8 +77,8 @@ export default function ItemEditTile({slot, onClose}: Props) {
 		const newItemList = new Array<number>()
 		for (let i = 0; i < items.length; i++) {
 			let isMatch = true
-			for (let j = 0; j < items[i].itemId.length && j < searchedValue.length; j++) {
-				if (searchedValue[j].toUpperCase() !== items[i].itemId[j]) {
+			for (let j = 0; j < items[i].id.length && j < searchedValue.length; j++) {
+				if (searchedValue[j].toUpperCase() !== items[i].id[j]) {
 					isMatch = false
 				}
 			}
@@ -108,12 +104,12 @@ export default function ItemEditTile({slot, onClose}: Props) {
 	const onSubmitItemEdit = (itemIndex: number, updatedItemQuantity: number) => {
 		// YET TO BE IMPLEMENTED
 		// will make an update to a position in the items array 
-		let newItem: {itemId: string, quantity: number, status: STATUS, isOgItem: boolean}
-		const newItemId = items.findIndex(e => e.itemId === items[itemIndex].itemId)
+		let newItem: {id: string, quantity: number, status: STATUS, isOgItem: boolean}
+		const newItemId = items.findIndex(e => e.id === items[itemIndex].id)
 		const previousQuantity = ogItems[newItemId].quantity
 
 		newItem = {
-			itemId: items[itemIndex].itemId,
+			id: items[itemIndex].id,
 			quantity: updatedItemQuantity,
 			status: STATUS.CHANGED,
 			isOgItem: items[itemIndex].isOgItem
@@ -121,7 +117,7 @@ export default function ItemEditTile({slot, onClose}: Props) {
 
 		if (updatedItemQuantity <= 0) {
 			newItem = {
-				itemId: items[itemIndex].itemId,
+				id: items[itemIndex].id,
 				quantity: 0,
 				status: STATUS.DELETED,
 				isOgItem: items[itemIndex].isOgItem
@@ -129,13 +125,13 @@ export default function ItemEditTile({slot, onClose}: Props) {
 		}
 		if (updatedItemQuantity === previousQuantity) {
 			newItem = {
-				itemId: items[itemIndex].itemId,
+				id: items[itemIndex].id,
 				quantity: updatedItemQuantity,
 				status: STATUS.NORMAL,
 				isOgItem: items[itemIndex].isOgItem
 			}
 		}
-		const indexOfItem = items.findIndex(e => e.itemId === newItem.itemId)
+		const indexOfItem = items.findIndex(e => e.id === newItem.id)
 
 		if (!newItem.isOgItem) {
 			if (newItem.status !== STATUS.NORMAL) {
@@ -153,98 +149,55 @@ export default function ItemEditTile({slot, onClose}: Props) {
 			}
 		}
 
-		items[items.findIndex(e => e.itemId === newItem.itemId)] = newItem
+		items[items.findIndex(e => e.id === newItem.id)] = newItem
 		setPresentedData([...importantItems])
 	}
 
 	const onSubmitDataToDB = async () => {
-		// YET TO BE IMPLEMENTED
-		// Will take all the changed data and send it to the database
-		// Must make correct changes to both the item table as well as the slot table
-		// In order to do that we must send the quantity to the item table, and send the updated item list to the slot table
-		
 		const finalItems = items.filter(e => e.quantity !== 0 || e.isOgItem)
-		let slotUpdateStatement = ""
-		let itemRetrieveStatment = ""
-		finalItems.map((e, index) => {
-			if (e.quantity !== 0) {
-				slotUpdateStatement += ("'" + e.itemId + "'")
-				if (index < finalItems.length - 1) {
-					slotUpdateStatement += ", "
-				}
-			}
 
-			itemRetrieveStatment += ("'" + e.itemId + "'")
+		const result = await database.getAllAsync<{slot_id: string, item_id: string, quantity: number}>("SELECT * FROM quantities WHERE slot_id = '" + slot.id + "';")
 
-			if (index < finalItems.length - 1) {
-				itemRetrieveStatment += ", "
-			}
-		})
+		let removeStatement = ""
 
-		const parsedResult = new Array<{itemId: string, slots: CompactSlot[]}>()
 		try {
-			const result = await database.getAllAsync<{id: string, slots: string}>("SELECT id, slots FROM items WHERE id IN (" + itemRetrieveStatment + ")")
-			for (var i = 0; i < result.length; i++) {
-				parsedResult[i] = {
-					itemId: result[i].id,
-					slots: JSON.parse(result[i].slots)
+			for (let i = 0; i < finalItems.length; i++) {
+				if (finalItems[i].quantity === 0) {
+					if (removeStatement !== "") {
+						removeStatement += ", "
+					}
+					removeStatement += ("'" + finalItems[i].id + "'")
+				}
+				if (finalItems[i].quantity !== 0) {
+					let resultIndex = result.findIndex((e) => {console.log("E.itemId = "+ e.item_id); console.log("FinalItems[i].id" + finalItems[i].id);return e.item_id == finalItems[i].id})
+					console.log("Result Index")
+					console.log(resultIndex)
+					if (resultIndex !== -1 && result[resultIndex].quantity !== finalItems[i].quantity) {
+						await database.runAsync("UPDATE quantities SET quantity = " + finalItems[i].quantity + " WHERE item_id = '" + finalItems[i].id + "' AND slot_id = '" + slot.id + "';")
+					}
+					if (resultIndex == -1) {
+						await database.runAsync("INSERT INTO quantities (item_id, slot_id, quantity) VALUES ('" + finalItems[i].id + "', '" + slot.id + "', " + finalItems[i].quantity.toString() + ");")
+					}
 				}
 			}
 		} catch (e) {
 			console.log(e)
 		}
 
-		for (var i = 0; i < parsedResult.length; i++) {
-			var slotFoundInItem: boolean = false
-			for (var j = 0; j < parsedResult[i].slots.length; j++) {
-				if (parsedResult[i].slots[j].id === slot.id) {
-					// UPDATE PREXISTING QUANTITY
-					if (finalItems[finalItems.findIndex((e) => (e.itemId === parsedResult[i].itemId))].quantity == 0) {
-						var temp = parsedResult[i].slots[j]
-						parsedResult[i].slots[j] = parsedResult[i].slots[parsedResult[i].slots.length - 1]
-						parsedResult[i].slots[parsedResult[i].slots.length - 1] = temp
-						parsedResult[i].slots.pop()
-						slotFoundInItem = true
-						break
-					}
-
-					parsedResult[i].slots[j].quantity = finalItems[finalItems.findIndex((e) => (e.itemId === parsedResult[i].itemId))].quantity
-					slotFoundInItem = true
-				}
-			}
-			if (!slotFoundInItem) {
-				// ADD NEW SLOT ID AND QUANTITY
-				parsedResult[i].slots.push({id: slot.id, quantity: finalItems[finalItems.findIndex((e) => (e.itemId === parsedResult[i].itemId))].quantity})
-				parsedResult[i].slots.sort((a, b) => {
-					if (a.id < b.id) return -1;
-					if (a.id > b.id) return 1;
-					return 0;
-				})
-			}
+		try {
+			await database.runAsync("DELETE FROM quantities WHERE slot_id = '" + slot.id + "' AND item_id IN (" + removeStatement + ");")
+		} catch (e) {
+			console.log(e)
 		}
 
-		// CREATE STATEMENT FOR SETTING SLOTS OF ITEM
 		try {
-			for (var i = 0; i < parsedResult.length; i++) {
-				let itemsUpdateStatement = ""
-				parsedResult[i].slots.map((e, index) => {
-					itemsUpdateStatement += ("json_object('id', '" + e.id + "', 'quantity', " + e.quantity.toString() + ")")
-					if (index < parsedResult[i].slots.length - 1) {
-						itemsUpdateStatement += ", "
-					}
-				})
+			for (let i = 0; i < finalItems.length; i++) {
 				
-				await database.runAsync("UPDATE items SET slots = json_array(" + itemsUpdateStatement + ") WHERE id = '" + parsedResult[i].itemId + "';")
 			}
 		} catch (e) {
 			console.log(e)
 		}
-
-		try {
-			await database.runAsync("UPDATE slots SET items = json_array(" + slotUpdateStatement + ") WHERE id = '" + slot.id + "';")
-		} catch (e) {
-			console.log(e)
-		}
+		
 		onClose()
 	}
 
@@ -261,7 +214,7 @@ export default function ItemEditTile({slot, onClose}: Props) {
 		>
 			<View style={styles.listLabel}>
 				<Text>
-					{items[item].itemId}
+					{items[item].id}
 				</Text>
 			</View>
 			<View style={styles.listLabel}>
