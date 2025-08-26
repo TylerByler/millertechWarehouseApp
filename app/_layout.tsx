@@ -18,10 +18,6 @@ export default function RootLayout() {
     try {
       await db.execAsync(
         `
-        DROP TABLE IF EXISTS slots;
-        DROP TABLE IF EXISTS items;
-        DROP TABLE IF EXISTS quantities;
-
         CREATE TABLE IF NOT EXISTS slots (
           id VARCHAR(10) NOT NULL PRIMARY KEY);
 
@@ -34,16 +30,6 @@ export default function RootLayout() {
           quantity INTEGER,
           FOREIGN KEY(item_id) REFERENCES items(id),
           FOREIGN KEY(slot_id) REFERENCES slots(id));
-
-        INSERT INTO slots (id) VALUES ('A-1');
-        INSERT INTO slots (id) VALUES ('A-2');
-        INSERT INTO slots (id) VALUES ('A-3');
-
-        INSERT INTO items (id) VALUES ('JS40P');
-        INSERT INTO items (id) VALUES ('JS22PK');
-        INSERT INTO items (id) VALUES ('HD1GW');
-
-        INSERT INTO quantities (item_id, slot_id, quantity) VALUES ('JS40P', 'A-1', 40);
         `
       );
     } catch(e) {
