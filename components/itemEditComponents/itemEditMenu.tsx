@@ -1,9 +1,10 @@
+import { STATUS } from "@/assets/types/STATUS"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { useEffect, useState } from "react"
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
-import { STATUS } from "./itemEditTile"
 
 type Props = {
+	isModalVisible: boolean | undefined,
 	itemIndex: number,
 	item: {id: string, quantity: number, status: STATUS, isOgItem: boolean},
 	ogQuantity: number
@@ -11,17 +12,24 @@ type Props = {
 	onSubmit: (itemIndex: number, updatedItemQuantity: number) => void
 }
 
-export default function ItemEditMenu({itemIndex, item, ogQuantity, onCloseEditItem, onSubmit}: Props) {
+export default function ItemEditMenu({isModalVisible, itemIndex, item, ogQuantity, onCloseEditItem, onSubmit}: Props) {
 	const [thisItem, setThisItem] = useState<{id: string, quantity: number, status: STATUS, isOgItem: boolean}>({id: "", quantity: -1, status: STATUS.NORMAL, isOgItem: false})
 	const [updatedItemQuantity, setUpdatedItemQuantity] = useState<number>(0)
 	const [previousQuantity, setPreviousQuantity] = useState<number>(0)
 
 	useEffect(() => {
+		console.log("itemEditMenu: Item Loaded Into Props")
+		console.log(item)
+	}, [isModalVisible])
+
+	useEffect(() => {
 		if (item !== undefined){
+			console.log("itemEditMenu: Item Loaded From Props")
 			setThisItem({id: item.id, quantity: item.quantity, status: item.status, isOgItem: item.isOgItem})
 			setPreviousQuantity(ogQuantity)
 		}
-	},[])
+			console.log("itemEditMenu: Item Failed to Load From Props")
+	},[item])
 
 	const SubmitButton = () => (
 		<Pressable
@@ -97,7 +105,7 @@ const styles = StyleSheet.create({
 	},
 	editItemBox: {
 		width: "80%",
-		height: "30%",
+		flex: 0.8,
 		borderWidth: 4,
 		borderColor: "#25292e",
 		borderRadius: 16

@@ -1,14 +1,9 @@
 import { Item } from "@/assets/types/Item"
+import { STATUS } from "@/assets/types/STATUS"
 import { useSQLiteContext } from "expo-sqlite"
 import { useEffect, useState } from "react"
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import SlotEditMenu from "./slotEditMenu"
-
-export enum STATUS {
-	NORMAL,
-	CHANGED,
-	DELETED
-}
 
 type Props = {
 	item: Item
@@ -286,6 +281,7 @@ const styles = StyleSheet.create({
 		marginTop: 80,
 		flexDirection: "column",
 		alignContent: "center",
+		flex: 1,
 	},
 	searchBarContainer: {
 		width: "100%",

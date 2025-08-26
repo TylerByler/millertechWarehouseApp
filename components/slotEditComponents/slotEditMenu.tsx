@@ -1,7 +1,7 @@
+import { STATUS } from "@/assets/types/STATUS"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { useEffect, useState } from "react"
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
-import { STATUS } from "./slotEditTile"
 
 type Props = {
 	slotIndex: number,

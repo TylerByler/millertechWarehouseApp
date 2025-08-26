@@ -1,4 +1,4 @@
-import { Link, router } from "expo-router";
+import { Link, router, Stack } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -9,7 +9,6 @@ enum Tab {
 }
 
 export default function Search() {
-	const [searchValue, setSearchValue] = useState<string>("")
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.ITEM)
 	const [slots, setSlots] = useState<string[]>([])
 	const [items, setItems] = useState<string[]>([])
@@ -110,6 +109,14 @@ export default function Search() {
 
 	return (
 		<View style={styles.container}>
+			<Stack.Screen 
+			options={{ 
+				title: 'Search',
+				headerStyle: {
+				backgroundColor: '#25292e',
+				},
+				headerTintColor: '#fff',
+			}}/>
 			<View style={styles.searchBarContainer}>
 				<View style={styles.tabContainer}>
 					<Pressable 
@@ -137,7 +144,6 @@ export default function Search() {
 					placeholderTextColor={"grey"}
 					style={styles.searchBar} 
 					onChangeText={(value) => {
-						setSearchValue(value)
 						searchItems(value)
 					}}
 				/>}
@@ -147,7 +153,6 @@ export default function Search() {
 					placeholderTextColor={"grey"}
 					style={styles.searchBar} 
 					onChangeText={(value) => {
-						setSearchValue(value)
 						searchSlots(value)
 					}}
 				/>}
@@ -197,12 +202,13 @@ const styles = StyleSheet.create({
 		flex: 1,
 		alignContent: "center",
 		alignItems: "center",
-		alignSelf: 'center'
+		alignSelf: 'center',
 	},
 	searchBarContainer: {
 		display: 'flex',
 		width: "100%",
-		height: "15%",
+		height: "20%",
+		minHeight: 30,
 		margin: 60,
 	},
 	tabContainer: {

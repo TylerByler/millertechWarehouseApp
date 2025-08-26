@@ -3,7 +3,7 @@
     "name": "millertechWarehouseApp",
     "slug": "millertechWarehouseApp",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "millertechwarehouseapp",
     "userInterfaceStyle": "automatic",
@@ -17,7 +17,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.tjbyler.millertechWarehouseApp"
+      "package": "com.tjbyler.millertechWarehouseApp",
+      "supportsTablet": true
     },
     "web": {
       "bundler": "metro",

@@ -1,7 +1,7 @@
 import { CompactSlot, Item } from "@/assets/types/Item";
 import EditModal from "@/components/editModal";
 import SlotEditTile from "@/components/slotEditComponents/slotEditTile";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { Link, router, Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -41,6 +41,11 @@ export default function ItemScreen() {
 	}
 
 	useEffect(() => {
+		console.log("item/[id]: Modal Edit Value Changed")
+		console.log(modalEditValue)
+	}, [modalEditValue])
+
+	useEffect(() => {
 		loadData();
 		setModalEditValue(data)
 	},[])
@@ -72,36 +77,44 @@ export default function ItemScreen() {
 	
 	return (
 		<StrictMode>
+			<Stack.Screen 
+			options={{ 
+				title: 'Item Detail Screen',
+				headerStyle: {
+				backgroundColor: '#25292e',
+				},
+				headerTintColor: '#fff',
+			}}/>
 			<View style={styles.pageContainer}>
 				<View style={styles.itemContainer}>
-			<View style={styles.titleContainer}>
-				<Text style={styles.title}>
-					Item #{data.id}
-				</Text>
-			</View>
-			<View style={styles.detailContainer}>
-				<View style={styles.slotLinksContainer}>
-					<View style={[styles.slotLinksLabel, {backgroundColor: "#3b434d", height: 40}]}>
-						<Text style={{fontWeight: "bold", fontSize: 20, color: "white"}}>SLOTS</Text>
+					<View style={styles.titleContainer}>
+						<Text style={styles.title}>
+							Item #{data.id}
+						</Text>
 					</View>
-					<View style={styles.slotLinksLabel}>
-						<View style={{flex: 1, alignItems: "center"}}>
-							<Text style={{fontWeight: "bold"}}>ID</Text>
+					<View style={styles.detailContainer}>
+						<View style={styles.slotLinksContainer}>
+							<View style={[styles.slotLinksLabel, {backgroundColor: "#3b434d", height: 40}]}>
+								<Text style={{fontWeight: "bold", fontSize: 20, color: "white"}}>SLOTS</Text>
 							</View>
-						<View style={{flex: 1, alignItems: "center"}}>
-							<Text style={{fontWeight: "bold"}}>QUANTITY</Text>
+							<View style={styles.slotLinksLabel}>
+								<View style={{flex: 1, alignItems: "center"}}>
+									<Text style={{fontWeight: "bold"}}>ID</Text>
+									</View>
+								<View style={{flex: 1, alignItems: "center"}}>
+									<Text style={{fontWeight: "bold"}}>QUANTITY</Text>
+								</View>
+							</View>
+							<FlatList 
+							data={data.slots}
+							renderItem={SlotLinks}
+							/>
+							<Pressable style={[styles.slotLinksLabel, {alignSelf: "flex-end"}]} onPress={() => onEditSlots(data)}>
+								<Text>Edit Slots</Text>
+							</Pressable>
 						</View>
 					</View>
-					<FlatList 
-					data={data.slots}
-					renderItem={SlotLinks}
-					/>
-					<Pressable style={[styles.slotLinksLabel, {alignSelf: "flex-end"}]} onPress={() => onEditSlots(data)}>
-						<Text>Edit Slots</Text>
-					</Pressable>
 				</View>
-			</View>
-		</View>
 				<EditModal title={"Edit Slots"} isVisible={isModalVisible} onClose={onCloseModal}>
 					<SlotEditTile item={modalEditValue!} onClose={onCloseModal}></SlotEditTile>
 				</EditModal>
@@ -136,7 +149,7 @@ const styles = StyleSheet.create({
 		alignSelf: "center",
 		width: "85%",
 		marginTop: 90,
-		alignContent: "center"
+		alignContent: "center",
 	},
 	itemContainer: {
 		height: 500,

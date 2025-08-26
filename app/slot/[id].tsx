@@ -1,7 +1,7 @@
 import { CompactItem, Slot } from "@/assets/types/Slot";
 import EditModal from "@/components/editModal";
 import ItemEditTile from "@/components/itemEditComponents/itemEditTile";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { Link, router, Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -89,6 +89,14 @@ export default function SlotScreen() {
 
 	return (
 		<StrictMode>
+			<Stack.Screen 
+			options={{ 
+				title: 'Slot Detail Screen',
+				headerStyle: {
+				backgroundColor: '#25292e',
+				},
+				headerTintColor: '#fff',
+			}}/>
 			<View style={styles.pageContainer}>
 				<Item item={data}></Item>
 			</View>
