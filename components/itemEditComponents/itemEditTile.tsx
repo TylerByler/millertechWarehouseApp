@@ -35,7 +35,7 @@ export default function ItemEditTile({ slot, onClose }: Props) {
   const loadData = async () => {
     try {
       const itemsResult = await database.getAllAsync<{ id: string }>(
-        "SELECT id FROM items"
+        "SELECT id FROM items ORDER BY id ASC"
       );
       const quantityResult = await database.getAllAsync<{
         slot_id: string;
@@ -44,7 +44,7 @@ export default function ItemEditTile({ slot, onClose }: Props) {
       }>(
         "SELECT item_id, quantity FROM quantities WHERE slot_id = '" +
           slot.id +
-          "';"
+          "' ORDER BY item_id ASC;"
       );
       console.log(
         "itemEditTile: itemsResult************************************************************************"

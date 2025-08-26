@@ -19,7 +19,7 @@ export default function Search() {
 
 	const loadSlots = async () => {
 		try {
-			const slotResult = await database.getAllAsync<{id: string}>("SELECT id FROM slots;");
+			const slotResult = await database.getAllAsync<{id: string}>("SELECT id FROM slots ORDER BY id ASC;");
 			console.log("Slot Result");
 			console.log(slotResult);
 			const parsedSlots = new Array<string>()
@@ -40,7 +40,7 @@ export default function Search() {
 
 	const loadItems = async () => {
 		try {
-			const itemResult = await database.getAllAsync<{id: string}>("SELECT id FROM items;");
+			const itemResult = await database.getAllAsync<{id: string}>("SELECT id FROM items ORDER BY id ASC;");
 			const parsedItems = new Array<string>()
 			for(let i = 0; i < itemResult.length; i++) {
 				parsedItems.push(itemResult[i].id)

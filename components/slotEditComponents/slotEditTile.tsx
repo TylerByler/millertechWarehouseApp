@@ -21,7 +21,7 @@ export default function SlotEditTile({item, onClose}: Props) {
 	const database = useSQLiteContext() 
 
 	const loadData = async () => {
-		const result = await database.getAllAsync<{id: string}>("SELECT id FROM slots")
+		const result = await database.getAllAsync<{id: string}>("SELECT id FROM slots ORDER BY id ASC")
 		const newSlots = new Array<{slotId: string, quantity: number, status: STATUS, isOgSlot: boolean}>()
 		const newPresentedData = new Array<number>()
 		for (let i = 0; i < result.length; i++) {

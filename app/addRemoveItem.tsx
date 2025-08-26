@@ -16,7 +16,7 @@ export default function addRemoveItem() {
 		setSearchedValue("");
 		try {
 			const slotsResult = await database.getAllAsync<{ id: string }>(
-				"SELECT id FROM items"
+				"SELECT id FROM items ORDER BY id ASC;"
 			);
 			const parsedItems = new Array<string>();
 			for (let i = 0; i < slotsResult.length; i++) {

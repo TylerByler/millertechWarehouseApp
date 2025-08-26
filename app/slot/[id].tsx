@@ -19,7 +19,7 @@ export default function SlotScreen() {
 
 	const loadData = async () => {
 		try {
-			const quantitiesResult = await database.getAllAsync<{item_id: string, quantity: number}>("SELECT item_id, quantity FROM quantities WHERE slot_id ='" + id + "';")
+			const quantitiesResult = await database.getAllAsync<{item_id: string, quantity: number}>("SELECT item_id, quantity FROM quantities WHERE slot_id ='" + id + "' ORDER BY item_id ASC;")
 			if (typeof id == "string") {
 				let parsedSlot = {
 					id: id,

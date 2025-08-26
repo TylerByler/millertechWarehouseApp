@@ -24,7 +24,7 @@ export default function addRemoveSlot() {
 		setSearchedValue("");
     try {
       const slotsResult = await database.getAllAsync<{ id: string }>(
-        "SELECT id FROM slots"
+        "SELECT id FROM slots ORDER BY id ASC;"
       );
       const parsedSlots = new Array<string>();
       for (let i = 0; i < slotsResult.length; i++) {

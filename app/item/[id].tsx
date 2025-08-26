@@ -22,8 +22,8 @@ export default function ItemScreen() {
 
 	const loadData = async () => {
 		try {
-			const itemResult = await database.getAllAsync<{id: string, name: string, primaryslot: string, desc: string}>("SELECT * FROM items WHERE id ='" + id + "';")
-			const quantitiesResult = await database.getAllAsync<{slot_id: string, quantity: number}>("SELECT slot_id, quantity FROM quantities WHERE item_id = '" + id + "';");
+			const itemResult = await database.getAllAsync<{id: string, name: string, primaryslot: string, desc: string}>("SELECT * FROM items WHERE id ='" + id + "' ORDER BY id ASC;")
+			const quantitiesResult = await database.getAllAsync<{slot_id: string, quantity: number}>("SELECT slot_id, quantity FROM quantities WHERE item_id = '" + id + "' ORDER BY slot_id ASC;");
 			if (typeof id == "string") {
 				let parsedItem = {
 					id: id,
