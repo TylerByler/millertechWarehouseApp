@@ -44,3 +44,6 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+*.sql
+*.apk

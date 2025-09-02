@@ -16,23 +16,20 @@ export default function Search() {
 	const [filteredItems, setFilteredItems] = useState<string[]>([])
 
 	const database = useSQLiteContext()
+	const fileIndicator = "\n^ IN SEARCH ^"
 
+	
 	const loadSlots = async () => {
 		try {
-			const slotResult = await database.getAllAsync<{id: string}>("SELECT id FROM slots ORDER BY id ASC;");
-			console.log("Slot Result");
-			console.log(slotResult);
+			const slotResult = await database.getAllAsync<{id: string}>("SELECT id FROM slots ORDER BY SUBSTR(id, 1, 1), CAST(SUBSTR(id, 3) AS INTEGER);");
 			const parsedSlots = new Array<string>()
 			for(let i = 0; i < slotResult.length; i++) {
 				parsedSlots.push(slotResult[i].id)
 			}
-			console.log("Parsed Slots")
-			console.log(parsedSlots)
-
 			setSlots(parsedSlots);
 			setFilteredSlots(parsedSlots);
 		} catch(e) {
-			console.log(e)
+			console.error(e + fileIndicator)
 			router.back()
 		}
 		
@@ -48,7 +45,7 @@ export default function Search() {
 			setItems(parsedItems);
 			setFilteredItems(parsedItems);
 		} catch(e) {
-			console.log(e)
+			console.log(e + fileIndicator)
 			router.back()
 		}
 	}
@@ -60,10 +57,12 @@ export default function Search() {
 		}
 		const newItemList = new Array<string>()
 		for (let i = 0; i < items.length; i++) {
-			console.log(typeof items[i])
 			let isMatch = true
 			let offset = 0
 			for (let j = 0; j + offset < items[i].length && j < searchedValue.length; j++) {
+				if (searchedValue.length > items[i].length - offset) {
+					isMatch = false;
+				}
 				if (items[i][j + offset]==="#" && searchedValue[j] !== "#") {
 					offset++
 				}
@@ -88,6 +87,9 @@ export default function Search() {
 			let isMatch = true
 			let offset = 0
 			for (let j = 0; j + offset < slots[i].length && j < searchedValue.length; j++) {
+				if (searchedValue.length > slots[i].length - offset) {
+					isMatch = false;
+				}
 				if (slots[i][j + offset] === "-" && searchedValue[j] !== "-") {
 					offset++
 				}
@@ -273,7 +275,10 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 10,
 		marginBottom: 2,
 		alignItems: "center",
-		justifyContent: "center"
+		justifyContent: "center",
+		textAlign: "center",
+		textAlignVertical: "center",
+		borderRadius: 12,
 	},
 	linkText: {
 		fontSize: 20,

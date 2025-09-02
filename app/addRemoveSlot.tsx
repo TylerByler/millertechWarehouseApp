@@ -2,13 +2,13 @@ import { router, Stack } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import {
-	FlatList,
-	Modal,
-	Pressable,
-	StyleSheet,
-	Text,
-	TextInput,
-	View,
+  FlatList,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 export default function addRemoveSlot() {
@@ -24,7 +24,7 @@ export default function addRemoveSlot() {
 		setSearchedValue("");
     try {
       const slotsResult = await database.getAllAsync<{ id: string }>(
-        "SELECT id FROM slots ORDER BY id ASC;"
+        "SELECT id FROM slots ORDER BY SUBSTR(id, 1, 1), CAST(SUBSTR(id, 3) AS INTEGER);"
       );
       const parsedSlots = new Array<string>();
       for (let i = 0; i < slotsResult.length; i++) {
@@ -48,7 +48,6 @@ export default function addRemoveSlot() {
   }, [slots]);
 
   useEffect(() => {
-    console.log(searchedValue);
     searchSlots(searchedValue);
   }, [searchedValue]);
 
@@ -67,6 +66,9 @@ export default function addRemoveSlot() {
         j + offset < slots[i].length && j < searchedValue.length;
         j++
       ) {
+        if (searchedValue.length > slots[i].length - offset) {
+					isMatch = false;
+				}
         if (slots[i][j + offset] === "-" && searchedValue[j] !== "-") {
           offset++;
         }

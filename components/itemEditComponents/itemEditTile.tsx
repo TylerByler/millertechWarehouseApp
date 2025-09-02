@@ -67,13 +67,6 @@ export default function ItemEditTile({ slot, onClose }: Props) {
           isOgItem: false,
         });
         for (let j = 0; j < quantityResult.length; j++) {
-          console.log(
-            "newItems[newItems.length -1].id = " +
-              newItems[newItems.length - 1].id
-          );
-          console.log(
-            "quantityResult[j].item_id = " + quantityResult[j].item_id
-          );
           if (newItems[newItems.length - 1].id === quantityResult[j].item_id) {
             newItems[newItems.length - 1].quantity = quantityResult[j].quantity;
             newItems[newItems.length - 1].isOgItem = true;

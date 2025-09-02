@@ -27,11 +27,9 @@ export default function SlabButton({style, text, href, onPress}: Props) {
 
 const styles = StyleSheet.create({
 	container: {
-		display: "flex",
-		flexDirection: "row",
 		aspectRatio: 1,
-		maxWidth: 420,
-		minWidth: 300,
+		height: 200,
+		flexDirection: "row",
 		backgroundColor: '#25292e',
 		borderRadius: 28,
 		justifyContent: "center",

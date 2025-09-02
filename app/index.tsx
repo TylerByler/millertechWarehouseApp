@@ -1,8 +1,11 @@
 import SlabButton from "@/components/SlabButton";
 import { Stack } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { StyleSheet, View } from "react-native";
 
 export default function Index() {
+  const db = useSQLiteContext()
+
   return (
     <View style={styles.container}>
       <Stack.Screen 
@@ -21,7 +24,7 @@ export default function Index() {
         />
         <SlabButton 
           style={styles.buttonContainer}
-          href="/map"
+          href="/settings"
           text="Map Screen"
         />
         <SlabButton 
@@ -42,9 +45,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: "100%",
-    width: "100%",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   buttonListContainer: {
     display: "flex",

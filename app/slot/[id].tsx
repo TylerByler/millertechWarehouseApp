@@ -6,6 +6,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
+
 export default function SlotScreen() {
 	const { id } = useLocalSearchParams()
 	const [data, setData] = useState<Slot>({
@@ -16,6 +17,7 @@ export default function SlotScreen() {
 	const [modalEditValue, setModalEditValue] = useState<Slot>()
 
 	const database = useSQLiteContext()
+	const fileIndicator = "\n^IN SLOT PAGE^"
 
 	const loadData = async () => {
 		try {
@@ -26,9 +28,10 @@ export default function SlotScreen() {
 					items: quantitiesResult
 				}
 				setData(parsedSlot) 
+				console.log("Loaded Data")
 			}
 		} catch(e) {
-			console.log(e)
+			console.log(e + fileIndicator)
 			router.back()
 		}
 	}

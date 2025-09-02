@@ -16,7 +16,7 @@ export default function addRemoveItem() {
 		setSearchedValue("");
 		try {
 			const slotsResult = await database.getAllAsync<{ id: string }>(
-				"SELECT id FROM items ORDER BY id ASC;"
+				"SELECT id FROM items ORDER BY id;"
 			);
 			const parsedItems = new Array<string>();
 			for (let i = 0; i < slotsResult.length; i++) {
@@ -40,7 +40,6 @@ export default function addRemoveItem() {
 	}, [items]);
 
 	useEffect(() => {
-		console.log(searchedValue);
 		searchItems(searchedValue);
 	}, [searchedValue]);
 
@@ -51,10 +50,12 @@ export default function addRemoveItem() {
 		}
 		const newItemList = new Array<string>()
 		for (let i = 0; i < items.length; i++) {
-			console.log(typeof items[i])
 			let isMatch = true
 			let offset = 0
 			for (let j = 0; j + offset < items[i].length && j < searchedValue.length; j++) {
+				if (searchedValue.length > items[i].length - offset) {
+					isMatch = false;
+				}
 				if (items[i][j + offset]==="#" && searchedValue[j] !== "#") {
 					offset++
 				}
@@ -77,7 +78,7 @@ export default function addRemoveItem() {
 	const submitNewSlotToDB = async () => {
 		try {
 			await database.runAsync(
-				"INSERT INTO slots (id) VALUES ('" + searchedValue + "')"
+				"INSERT INTO items (id) VALUES ('" + searchedValue + "')"
 			);
 			loadData();
 		} catch (e) {
@@ -117,7 +118,7 @@ export default function addRemoveItem() {
 			<View style={styles.searchBarContainer}>
 				<View style={styles.searchBarTitle}>
 					<View style={styles.searchBarTitleTextContainer}>
-						<Text style={styles.searchBarTitleText}>Add New Slot</Text>
+						<Text style={styles.searchBarTitleText}>Add New Item</Text>
 					</View>
 				</View>
 				<TextInput

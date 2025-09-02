@@ -37,7 +37,13 @@
         }
       ],
       "expo-sqlite",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-asset",
+        {
+          "assets": ["./assets/data.db"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

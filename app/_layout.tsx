@@ -1,53 +1,104 @@
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
 import { Stack } from "expo-router";
-import * as ScreenOrientation from 'expo-screen-orientation';
-import { SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
+import { openDatabaseAsync, SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
 import { StrictMode, Suspense, useEffect } from "react";
 import { Text, View } from "react-native";
 
 export default function RootLayout() {
-  const lockScreenOrientation = async () => {
-    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+  const DATABASE_NAME = "data"
+
+  const validateDB = async (): Promise<boolean> => {
+    console.log("<===Validating Database Integrity===>")
+    var db: SQLiteDatabase | undefined = undefined
+    try {
+      db = await openDatabaseAsync(DATABASE_NAME);
+      console.log("SUCCESS: Database opened successfuly")
+      console.log(db)
+    } catch (e) {
+      console.log("ERROR: Database failed to open")
+      console.log(e)
+      return false
+    }
+
+    if (db != undefined) {
+      var error = undefined
+      try {
+        const result = await db.getFirstAsync<{journal_mode: string}>("PRAGMA journal_mode")
+        console.log("Journal Mode: " + result?.journal_mode)
+        const items = (await db.getAllAsync("SELECT * FROM items")).length
+        const slots = (await db.getAllAsync("SELECT * FROM slots")).length
+      } catch (e) {
+        error = e;
+      }
+
+      if (error != undefined) {
+        console.log("ERROR: SQL queries failed")
+        console.log(error)
+        return false;
+      }
+
+    } else {
+      console.log("ERROR: Database is undefined")
+      return false;
+    }
+
+    console.log("SUCCESS: Database has been validated")
+    return true;
   }
 
-  useEffect(() => {
-    lockScreenOrientation();
-  },[])
+  const createDBIfNeeded = async () => {
+    const dbDir = `${FileSystem.documentDirectory}SQLite/`;
+    const dbFile = `${dbDir}${DATABASE_NAME}`
 
-  const createDBIfNeeded = async (db: SQLiteDatabase) => {
-    console.log("Creating Database")
-    try {
-      await db.execAsync(
-        `
-        CREATE TABLE IF NOT EXISTS slots (
-          id VARCHAR(10) NOT NULL PRIMARY KEY);
+    if (!(await FileSystem.getInfoAsync(dbDir)).exists) {
+      await FileSystem.makeDirectoryAsync(dbDir, {intermediates: true});
+    }
 
-        CREATE TABLE IF NOT EXISTS items (
-          id VARCHAR(20) NOT NULL PRIMARY KEY);
+    if (!(await validateDB())) {
+      try {
+        await FileSystem.deleteAsync(dbFile)
+      } catch (e) {
+        console.log(e)
+      }
+      console.log("Copying Database")
+      const asset = Asset.fromModule(require('../assets/data.db'))
+      await asset.downloadAsync()
+      console.log("Asset:")
+      console.log(asset)
+      try {
+        await FileSystem.copyAsync({
+          from: asset.localUri || asset.uri,
+          to: dbFile
+        });
 
-        CREATE TABLE IF NOT EXISTS quantities (
-          item_id VARCHAR(20) NOT NULL,
-          slot_id VARCAHR(10) NOT NULL,
-          quantity INTEGER,
-          FOREIGN KEY(item_id) REFERENCES items(id),
-          FOREIGN KEY(slot_id) REFERENCES slots(id));
-        `
-      );
-    } catch(e) {
-      console.log(e);
+        const newDbFileExists = await FileSystem.getInfoAsync(dbFile);
+        if (!newDbFileExists.exists) {
+          throw new Error('Database file was not copied correctly.');
+        }
+        console.log('Copied db size is ' + newDbFileExists.size + ' bytes')
+        validateDB()
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 
+  useEffect(() => {
+    createDBIfNeeded()
+  }, [])
+
   const Loading = () => {
-    return <View><Text>Fart</Text></View>
+    return <View><Text>Loading...</Text></View>
   }
   
   return (
     <StrictMode>
       <Suspense fallback={Loading()}>
-        <SQLiteProvider databaseName="millertechWarehouseSqlite" onInit={createDBIfNeeded} useSuspense>
+        <SQLiteProvider databaseName={DATABASE_NAME} useSuspense>
           <Stack>
             <Stack.Screen name="index" />
-            <Stack.Screen name="map" />
+            <Stack.Screen name="settings" />
             <Stack.Screen name="search" />
             <Stack.Screen name="slot/[id]" />
             <Stack.Screen name="item/[id]" />
