@@ -78,7 +78,7 @@ export default function addRemoveItem() {
 	const submitNewSlotToDB = async () => {
 		try {
 			await database.runAsync(
-				"INSERT INTO items (id) VALUES ('" + searchedValue + "')"
+				"INSERT INTO items (id) VALUES ('" + searchedValue.toUpperCase() + "')"
 			);
 			loadData();
 		} catch (e) {

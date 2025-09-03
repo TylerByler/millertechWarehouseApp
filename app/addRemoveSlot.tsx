@@ -91,7 +91,7 @@ export default function addRemoveSlot() {
   const submitNewSlotToDB = async () => {
     try {
       await database.runAsync(
-        "INSERT INTO slots (id) VALUES ('" + searchedValue + "')"
+        "INSERT INTO slots (id) VALUES ('" + searchedValue.toUpperCase() + "')"
       );
       loadData();
     } catch (e) {
