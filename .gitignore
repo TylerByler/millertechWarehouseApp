@@ -47,3 +47,5 @@ app-example
 
 *.sql
 *.apk
+
+*.db
