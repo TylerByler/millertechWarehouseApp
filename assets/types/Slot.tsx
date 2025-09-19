@@ -1,12 +1,13 @@
-
 export type Slot = {
 	id: string,
-	items: CompactItem[]
+	items: CompactItem[],
+	isReady: number
 }
 
 export type TempSlot = {
 	id: string,
-	items: string
+	items: string,
+	isReady: number
 }
 
 export type CompactItem = {
@@ -19,7 +20,8 @@ export function TempsToSlots(temp: TempSlot[]): Slot[] {
 	for (let i = 0; i < temp.length; i++) {
 		parsedSlots[i] = {
 			id: temp[i].id,
-			items: JSON.parse(temp[i].items)
+			items: JSON.parse(temp[i].items),
+			isReady: temp[i].isReady
 		}
 	}
 	return parsedSlots

@@ -51,10 +51,6 @@ export default function SlotEditTile({item, onClose}: Props) {
 	},[])
 
 	useEffect(() => {
-
-	},[slots])
-
-	useEffect(() => {
 		if (editSlot < 0) {
 			setIsModalVisible(false)
 		} else {

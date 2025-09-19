@@ -1,6 +1,7 @@
-import { Link, router, Stack } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Link, router, Stack, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 enum Tab {
@@ -10,9 +11,9 @@ enum Tab {
 
 export default function Search() {
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.ITEM)
-	const [slots, setSlots] = useState<string[]>([])
+	const [slots, setSlots] = useState<{id: string, is_ready: number}[]>([])
 	const [items, setItems] = useState<string[]>([])
-	const [filteredSlots, setFilteredSlots] = useState<string[]>([])
+	const [filteredSlots, setFilteredSlots] = useState<{id: string, is_ready: number}[]>([])
 	const [filteredItems, setFilteredItems] = useState<string[]>([])
 
 	const database = useSQLiteContext()
@@ -21,10 +22,10 @@ export default function Search() {
 	
 	const loadSlots = async () => {
 		try {
-			const slotResult = await database.getAllAsync<{id: string}>("SELECT id FROM slots ORDER BY SUBSTR(id, 1, 1), CAST(SUBSTR(id, 3) AS INTEGER);");
-			const parsedSlots = new Array<string>()
+			const slotResult = await database.getAllAsync<{id: string, is_ready: number}>("SELECT id, is_ready FROM slots ORDER BY SUBSTR(id, 1, 1), CAST(SUBSTR(id, 3) AS INTEGER);");
+			const parsedSlots = new Array<{id: string, is_ready: number}>()
 			for(let i = 0; i < slotResult.length; i++) {
-				parsedSlots.push(slotResult[i].id)
+				parsedSlots.push(slotResult[i])
 			}
 			setSlots(parsedSlots);
 			setFilteredSlots(parsedSlots);
@@ -82,18 +83,19 @@ export default function Search() {
 			setFilteredSlots(slots)
 			return
 		}
-		const newSlotList = new Array<string>()
+		const newSlotList = new Array<{id: string, is_ready: number}>()
 		for (let i = 0; i < slots.length; i++) {
 			let isMatch = true
 			let offset = 0
-			for (let j = 0; j + offset < slots[i].length && j < searchedValue.length; j++) {
-				if (searchedValue.length > slots[i].length - offset) {
+			for (let j = 0; j + offset < slots[i].id.length && j < searchedValue.length; j++) {
+				if (searchedValue.length > slots[i].id.length - offset) {
 					isMatch = false;
 				}
-				if (slots[i][j + offset] === "-" && searchedValue[j] !== "-") {
+				
+				if (slots[i].id[j + offset] === "-" && searchedValue[j] !== "-") {
 					offset++
 				}
-				if (searchedValue[j].toUpperCase() !== slots[i][j + offset]) {
+				if (searchedValue[j].toUpperCase() !== slots[i].id[j + offset]) {
 					isMatch = false
 				}
 			}
@@ -104,11 +106,16 @@ export default function Search() {
 		setFilteredSlots(newSlotList)
 	}
 
-	useEffect(() => {
-		loadSlots()
-		loadItems()
-	},[]) 
+	useFocusEffect(
+		useCallback(() => {
+			loadItems()
+			loadSlots()
+		}, [])
+	)
 
+	if (!database) {
+		return <View><Text>Loading...</Text></View>
+	}
 	return (
 		<View style={styles.container}>
 			<Stack.Screen 
@@ -165,13 +172,15 @@ export default function Search() {
 					data={filteredItems} 
 					renderItem={({item}) => (
 						<Link href={{
-							pathname: '/item/[id]',
+							pathname: '/item/[id]/overview',
 							params: {id: item}
 						}}
-						style={styles.listItem}>
-							<Text style={styles.linkText}>
-								{item}
-							</Text>
+						style={styles.listItemContainer}>
+							<View style={styles.listItem}>
+								<Text style={styles.linkText}>
+									{item}
+								</Text>
+							</View>
 						</Link>
 					)}
 				></FlatList>
@@ -182,13 +191,21 @@ export default function Search() {
 					data={filteredSlots} 
 					renderItem={({item}) => (
 						<Link href={{
-							pathname: '/slot/[id]',
-							params: {id: item}
+							pathname: '/slot/[id]/overview',
+							params: {id: item.id}
 						}}
-						style={styles.listItem}>
-							<Text style={styles.linkText}>
-								{item}
-							</Text>
+						style={styles.listItemContainer}>
+							<View style={styles.listItem}>
+								<Text style={styles.linkText}>
+									{item.id}
+								</Text>
+								{item.is_ready == 0 &&
+									<MaterialIcons name="check-box-outline-blank" size={20}></MaterialIcons>
+								}
+								{item.is_ready == 1 &&
+									<MaterialIcons name="check-box" size={20}></MaterialIcons>
+								}
+							</View>
 						</Link>
 					)}
 				></FlatList>
@@ -205,6 +222,7 @@ const styles = StyleSheet.create({
 		alignContent: "center",
 		alignItems: "center",
 		alignSelf: 'center',
+		paddingBottom: 100,
 	},
 	searchBarContainer: {
 		display: 'flex',
@@ -265,8 +283,7 @@ const styles = StyleSheet.create({
 	list: {
 		width: "60%"
 	},
-	listItem: {
-		display: "flex",
+	listItemContainer: {
 		width: "100%",
 		height: 60,
 		backgroundColor: '#cfd7e1',
@@ -274,11 +291,14 @@ const styles = StyleSheet.create({
 		borderWidth: 3,
 		paddingHorizontal: 10,
 		marginBottom: 2,
-		alignItems: "center",
-		justifyContent: "center",
-		textAlign: "center",
-		textAlignVertical: "center",
 		borderRadius: 12,
+	},
+	listItem: {
+		width: "100%",
+		height: "100%",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-around"
 	},
 	linkText: {
 		fontSize: 20,

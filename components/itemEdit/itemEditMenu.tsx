@@ -58,10 +58,10 @@ export default function ItemEditMenu({isModalVisible, itemIndex, item, ogQuantit
 							</Text>
 						</View>
 						<TextInput 
-						style={styles.editItemTextboxContainer}
-						placeholder={previousQuantity.toString()}
-						placeholderTextColor={"grey"}
-						onChangeText={(value) => {
+							style={styles.editItemTextboxContainer}
+							placeholder={previousQuantity.toString()}
+							placeholderTextColor={"grey"}
+							onChangeText={(value) => {
 							setUpdatedItemQuantity(parseInt(value))
 						}}
 						></TextInput>

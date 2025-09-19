@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 
 type Props = {
 	slotIndex: number,
-	slot: {slotId: string, quantity: number, status: STATUS, isOgSlot: boolean},
+	slot: {slot_id: string, quantity: number, status: STATUS, isOgSlot: boolean},
 	ogQuantity: number
 	onCloseEditSlot: () => void,
 	onSubmit: (slotIndex: number,updatedSlotQuantity: number) => void
@@ -18,7 +18,7 @@ export default function SlotEditMenu({slotIndex, slot, ogQuantity, onCloseEditSl
 
 	useEffect(() => {
 		if (slot !== undefined) {
-				setThisSlot({id: slot.slotId, quantity: slot.quantity, status: slot.status, isOgSlot: slot.isOgSlot})
+				setThisSlot({id: slot.slot_id, quantity: slot.quantity, status: slot.status, isOgSlot: slot.isOgSlot})
 				setPreviousQuantity(ogQuantity)
 			}
 	},[])

@@ -202,10 +202,10 @@ const styles = StyleSheet.create({
 		display: "flex",
 		width: "65%",
 		flex: 1,
-		justifyContent: "center",
 		alignContent: "center",
 		alignItems: "center",
 		alignSelf: "center",
+		marginBottom: 100,
 	},
 	list: {
 		width: "60%",

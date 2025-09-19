@@ -100,8 +100,11 @@ export default function RootLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="settings" />
             <Stack.Screen name="search" />
-            <Stack.Screen name="slot/[id]" />
-            <Stack.Screen name="item/[id]" />
+            <Stack.Screen name="slot/[id]/overview" />
+            <Stack.Screen name="slot/[id]/quantityEdit" />
+            <Stack.Screen name="item/[id]/overview" />
+            <Stack.Screen name="item/[id]/descriptionEdit" />
+            <Stack.Screen name="item/[id]/quantityEdit" />
           </Stack>
         </SQLiteProvider>
         </Suspense>
