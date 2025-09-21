@@ -47,7 +47,3 @@ app-example
 
 *.sql
 *.apk
-
-*.db
-
-*/quantityEdit_OLD

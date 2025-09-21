@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { Stack } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { Pressable, StyleSheet, Text, View } from "react-native";
