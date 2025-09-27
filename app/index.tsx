@@ -1,10 +1,8 @@
 import SlabButton from "@/components/SlabButton";
 import { Stack } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite";
 import { StyleSheet, View } from "react-native";
 
 export default function Index() {
-  const db = useSQLiteContext()
 
   return (
     <View style={styles.container}>

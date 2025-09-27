@@ -35,8 +35,10 @@ export default function ItemQuantityEdit() {
   /* EFFECTS */
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [])
+      if (database) {
+        loadData();
+      }
+    }, [database])
   );
 
 	useEffect(() => {
@@ -101,7 +103,6 @@ export default function ItemQuantityEdit() {
       setImportantSlots([...newPresentedData]);
     } catch (e) {
       console.log(e);
-      router.back()
     }
   };
 
@@ -424,7 +425,7 @@ export default function ItemQuantityEdit() {
 					onPress={onPressClearSlots}
         >
           <Text style={[styles.buttonText, { color: "#360000" }]}>
-            Clear Slot
+            Clear Item
           </Text>
         </Pressable>
         <Pressable

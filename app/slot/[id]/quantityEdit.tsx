@@ -33,8 +33,10 @@ export default function SlotQuantityEdit() {
 	/* EFFECTS */
 	useFocusEffect(
 		useCallback(() => {
-			loadData();
-		}, [])
+			if (database) {
+				loadData();
+			}
+		}, [database])
 	);
 
 	useEffect(() => {
@@ -99,7 +101,6 @@ export default function SlotQuantityEdit() {
 			setImportantItems([...newPresentedData]);
 		} catch (e) {
 			console.log(e);
-			router.back()
 		}
 	};
 
@@ -279,6 +280,10 @@ export default function SlotQuantityEdit() {
 		setUserItem(allItems[item].item_id)
 	}
 
+	const closePage = () => {
+		
+	}
+
 
 	/* COMPONENTS */
 	const flatListElement = ({ item }: { item: number }) => {
@@ -347,7 +352,7 @@ export default function SlotQuantityEdit() {
 		<View style={styles.pageContainer}>
 			<Stack.Screen
 				options={{
-					title: "Item Quantites Edit",
+					title: "Slot Quantites Edit",
 					headerStyle: {
 						backgroundColor: "#25292e",
 					},
@@ -364,7 +369,7 @@ export default function SlotQuantityEdit() {
 					<Text style={styles.topBarLabelText}>QUANTITY</Text>
 				</View>
 				<View style={[styles.topBarLabel, { flex: 4 }]}>
-					<Text style={styles.topBarLabelText}>SLOT</Text>
+					<Text style={styles.topBarLabelText}>ITEM</Text>
 				</View>
 				<View
 					style={[styles.topBarLabel, { flex: 3, marginRight: 0, padding: 0 }]}
@@ -386,7 +391,7 @@ export default function SlotQuantityEdit() {
 					value={userQuantity.toString()}/>
 				</View>
 				<View style={[styles.inputBox, { flex: 4 }]}>
-					<TextInput style={styles.input} placeholder="Enter Slot..." onChangeText={(value) => {searchItems(value); setUserItem("");}} />
+					<TextInput style={styles.input} placeholder="Enter Item..." onChangeText={(value) => {searchItems(value); setUserItem("");}} />
 				</View>
 				{!isItemSubmissionReady && 
 				<View style={[styles.button, {flex: 3, backgroundColor: "#cacacaff"}]}>
@@ -457,7 +462,7 @@ export default function SlotQuantityEdit() {
 					<View style={styles.editModalBox}>
 						<View style={styles.deleteMessageContainer}>
 							<Text style={styles.deleteMessageText}>
-								DO YOU WANT TO CLEAR ALL SLOTS???
+								DO YOU WANT TO CLEAR ALL ITEMS???
 							</Text>
 							<Text style={{textAlign: "center", marginTop: 10}}>
 								This will delete all quantities and relations between this slot and it's items

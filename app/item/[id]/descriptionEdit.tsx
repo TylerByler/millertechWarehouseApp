@@ -1,6 +1,6 @@
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function ItemDescriptionEdit() {
@@ -15,7 +15,6 @@ export default function ItemDescriptionEdit() {
 		setDesc(itemResult[0])
 		} catch(e) {
 			console.log(e);
-			router.back();
 		}
 	}
 
@@ -30,12 +29,17 @@ export default function ItemDescriptionEdit() {
 		router.back()
 		} catch(e) {
 			console.log(e)
+			router.back()
 		}
 	}
 
-	useEffect(() => {
-		loadData();
-	}, []) 
+	useFocusEffect(
+			useCallback(() => {
+				if (database) {
+					loadData();
+				}
+			}, [database])
+		)
 
 	return (
 		<>

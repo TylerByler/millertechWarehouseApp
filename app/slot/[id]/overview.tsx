@@ -1,6 +1,6 @@
 import { CompactItem, Slot } from "@/assets/types/Slot";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Link, router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { Link, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -39,14 +39,15 @@ export default function SlotScreen() {
 			}
 		} catch(e) {
 			console.log(e + fileIndicator)
-			router.back()
 		}
 	}
 
 	useFocusEffect(
 		useCallback(() => {
-			loadData()
-		}, [])
+			if (database) {
+				loadData();
+			}
+		}, [database])
 	)
 
 	useEffect(() => {

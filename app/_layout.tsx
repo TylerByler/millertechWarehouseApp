@@ -1,5 +1,5 @@
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Stack } from "expo-router";
 import { openDatabaseAsync, SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
 import { StrictMode, Suspense, useEffect } from "react";

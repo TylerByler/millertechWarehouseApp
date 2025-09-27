@@ -1,5 +1,5 @@
 import { CompactSlot, Item } from "@/assets/types/Item";
-import { Link, router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { Link, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -39,14 +39,15 @@ export default function ItemScreen() {
 			}
 		} catch(e) {
 			console.log(e)
-			router.back()
 		}
 	}
 
 	useFocusEffect(
 		useCallback(() => {
-			loadData()
-		}, [])
+			if (database) {
+				loadData();
+			}
+		}, [database])
 	)
 
 	useEffect(() => {

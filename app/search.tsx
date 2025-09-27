@@ -1,5 +1,5 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Link, router, Stack, useFocusEffect } from "expo-router";
+import { Link, Stack, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -31,7 +31,6 @@ export default function Search() {
 			setFilteredSlots(parsedSlots);
 		} catch(e) {
 			console.error(e + fileIndicator)
-			router.back()
 		}
 		
 	}
@@ -47,7 +46,6 @@ export default function Search() {
 			setFilteredItems(parsedItems);
 		} catch(e) {
 			console.log(e + fileIndicator)
-			router.back()
 		}
 	}
 
@@ -108,9 +106,11 @@ export default function Search() {
 
 	useFocusEffect(
 		useCallback(() => {
-			loadItems()
-			loadSlots()
-		}, [])
+			if (database) {
+				loadItems()
+				loadSlots()
+			}
+		}, [database])
 	)
 
 	if (!database) {
